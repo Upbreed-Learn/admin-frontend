@@ -1,7 +1,16 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: 'Trap';
+  src:
+    url('/fonts/Trap.woff2') format('woff2'),
+    url('/fonts/Trap.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -115,6 +124,25 @@
     @apply border-border outline-ring/50;
   }
   body {
+    font-family: 'Trap', Arial, sans-serif;
     @apply bg-background text-foreground;
   }
+}
+
+.grid-template-stack {
+  grid-template-areas: 'stack';
+}
+
+.grid-area-stack {
+  grid-area: stack;
+}
+
+.hide-scrollbar {
+  overflow: auto; /* or scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
