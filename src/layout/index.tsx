@@ -7,7 +7,7 @@ const RootLayout = () => {
       <Sidebar />
       <main className="ml-[15.58625rem] flex w-full justify-center">
         <div className="flex w-full max-w-[54.6875rem] flex-col">
-          <div className="fixed self-end pt-14">
+          <div className="fixed z-20 flex w-[54.6875rem] justify-end bg-white pt-14">
             <p className="">Hi, Super Admin</p>
           </div>
           <div className="mt-[7.225625rem]">
