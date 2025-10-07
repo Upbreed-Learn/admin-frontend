@@ -45,13 +45,14 @@ const Sidebar = () => {
   const { pathname } = useLocation();
   return (
     <aside className="hide-scrollbar fixed flex h-screen w-max flex-col gap-16 overflow-auto bg-[#305B43] px-11 pt-16">
-      <Link to={'/'}>
-        <img src={logo} alt="upbreed logo" />
+      <Link to={'/'} className="h-9 w-[9.625rem]">
+        <img src={logo} alt="upbreed logo" className="size-full" />
       </Link>
       <div className="flex flex-col gap-[7.5rem]">
         <div className="flex flex-col gap-4">
           {ROUTES.map(route => (
             <NavLink
+              key={route.path}
               to={route.path}
               className={({ isActive }) =>
                 cn(
