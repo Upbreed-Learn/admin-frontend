@@ -80,21 +80,23 @@ const Sidebar = () => {
                   />
                 </div>
               )}
-              {route.path === '/projects' && (
+              {route.path.includes('projects') && (
                 <div className="grid-stack grid">
                   <CalendarCheck
                     stroke={'#9B9B9B'}
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/projects' && 'opacity-100',
-                      pathname !== '/projects' && 'group-hover:!opacity-100',
+                      route.path.includes('projects') && 'opacity-100',
+                      !route.path.includes('projects') &&
+                        'group-hover:!opacity-100',
                     )}
                   />
                   <CalendarCheck
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/projects' && 'opacity-0',
-                      pathname !== '/projects' && 'group-hover:!opacity-0',
+                      route.path.includes('projects') && 'opacity-0',
+                      !route.path.includes('projects') &&
+                        'group-hover:!opacity-0',
                     )}
                   />
                 </div>
