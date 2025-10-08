@@ -136,7 +136,7 @@ export default function TotalRevenueChart() {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={120}>
         <LineChart
           data={data}
           onMouseMove={(state: any) => {

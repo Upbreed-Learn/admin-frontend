@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 
 const Instructors = () => {
   return (
-    <div className="flex basis-full flex-col gap-8 rounded-[10px] px-4 py-7 shadow-[0px_2px_4px_0px_#0000001A]">
+    <div className="hide-scrollbar flex h-[14.09rem] basis-full flex-col gap-8 overflow-auto rounded-[10px] px-4 py-7 shadow-[0px_2px_4px_0px_#0000001A]">
       <div className="flex flex-col gap-2">
         {Array(12)
           .fill(null)

@@ -13,12 +13,12 @@ import Instructors from './instructors';
 
 const Dashboard = () => {
   return (
-    <div className="flex flex-col gap-2.5 pb-6">
+    <div className="flex flex-col gap-1.5 pb-6">
       <Button className="cursor-pointer self-end border-[0.5px] border-[#6F6F6F] bg-white text-[8px]/3 font-bold text-[#6F6F6F] hover:bg-white">
         <ExportIcon />
         Save Report
       </Button>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3.5">
         <div className="flex items-center gap-10">
           <SummaryCard title="Total Reports" value={'15K'}>
             <FileIcon />

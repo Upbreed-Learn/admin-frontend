@@ -9,6 +9,8 @@ import Instructors from './instructors';
 import Blogs from './blogs';
 import OneOneSessions from './1-1-sessions';
 import Settings from './settings';
+import { NuqsAdapter } from 'nuqs/adapters/react';
+import UpdateProject from './projects/details';
 
 const router = createBrowserRouter([
   {
@@ -21,7 +23,16 @@ const router = createBrowserRouter([
       },
       {
         path: '/projects',
-        element: <Projects />,
+        children: [
+          {
+            index: true,
+            element: <Projects />,
+          },
+          {
+            path: '/projects/:id',
+            element: <UpdateProject />,
+          },
+        ],
       },
       {
         path: '/courses',
@@ -54,9 +65,11 @@ const router = createBrowserRouter([
 function App() {
   return (
     <div className="App">
-      <QueryProvider>
-        <RouterProvider router={router} />
-      </QueryProvider>
+      <NuqsAdapter>
+        <QueryProvider>
+          <RouterProvider router={router} />
+        </QueryProvider>
+      </NuqsAdapter>
     </div>
   );
 }
