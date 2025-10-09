@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import AvatarCustom from '@/components/ui/custom/avatar';
 import SelectInput from '@/components/ui/custom/select';
-import { Input } from '@/components/ui/input';
-import { ArrowUpDown, Plus, Search } from 'lucide-react';
+import { ArrowUpDown, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 import { useQueryState } from 'nuqs';
 import AddNewCourse from './add-new-course';
+import { SearchInput } from '@/components/ui/custom/input';
 
 const Projects = () => {
   const [_, setAddNewCourse] = useQueryState('addNewCourse');
@@ -15,13 +15,7 @@ const Projects = () => {
       <AddNewCourse />
       <div className="flex flex-col gap-9 rounded-lg bg-[#A1A1A10F] px-7 py-5">
         <div className="flex flex-col gap-3.5">
-          <div className="relative w-full max-w-[27.875rem] self-end">
-            <Input type="search" placeholder="Search" className="pl-9" />
-            <Search
-              className="absolute top-1/2 left-3 -translate-y-1/2"
-              size={16}
-            />
-          </div>
+          <SearchInput className="self-end" />
           <div className="flex items-center justify-between">
             <Button
               onClick={() => setAddNewCourse('true')}
