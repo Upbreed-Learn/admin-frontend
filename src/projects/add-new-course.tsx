@@ -92,8 +92,8 @@ const formSchema = z.object({
   courseDescription: z.string().min(10, {
     message: 'Course Description must be at least 10 characters.',
   }),
-  items: z.array(z.string()).refine(value => value.some(item => item), {
-    message: 'You have to select at least one item.',
+  items: z.array(z.string()).refine(value => value.length === 1, {
+    message: 'You must select exactly one item.',
   }),
   image: z
     .any()
