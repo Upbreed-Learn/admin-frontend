@@ -35,7 +35,7 @@ const Finance = () => {
           Switch to NGN
         </Button>
       </div>
-      <div className="flex items-center gap-7 rounded-lg pt-[4.625rem] pb-9 shadow-[0px_2.03px_2.03px_0px_#0000000A]">
+      <div className="flex items-center gap-7 rounded-lg pt-[1.625rem] pb-9 shadow-[0px_2.03px_2.03px_0px_#0000000A]">
         <div className="flex flex-col gap-0.5">
           <p className="text-[2.5rem]/[100%] font-bold">N100.8K</p>
           <p className="text-[9px]/[100%] font-semibold">Monthly Revenue</p>
