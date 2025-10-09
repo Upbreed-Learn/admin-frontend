@@ -86,16 +86,16 @@ const Sidebar = () => {
                     stroke={'#9B9B9B'}
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      route.path.includes('projects') && 'opacity-100',
-                      !route.path.includes('projects') &&
+                      pathname.includes('projects') && 'opacity-100',
+                      !pathname.includes('projects') &&
                         'group-hover:!opacity-100',
                     )}
                   />
                   <CalendarCheck
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      route.path.includes('projects') && 'opacity-0',
-                      !route.path.includes('projects') &&
+                      pathname.includes('projects') && 'opacity-0',
+                      !pathname.includes('projects') &&
                         'group-hover:!opacity-0',
                     )}
                   />
