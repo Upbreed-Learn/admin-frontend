@@ -1,8 +1,8 @@
-import ExportIcon from '@/assets/jsx-icons/export-icon';
-import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/custom/input';
 import DataTable from './data-table';
 import { CourseColumns, type CoursesType } from './columns';
+import ExportDropdown from '@/components/ui/custom/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 
 const Courses = () => {
   const data: CoursesType[] = [];
@@ -22,10 +22,9 @@ const Courses = () => {
     <div className="flex flex-col gap-6">
       <SearchInput />
       <div className="flex flex-col gap-3">
-        <Button className="cursor-pointer self-end border-[0.5px] border-[#6F6F6F] bg-white text-[8px]/3 font-bold text-[#6F6F6F] hover:bg-white">
-          <ExportIcon />
-          Save Report
-        </Button>
+        <ExportDropdown className="self-end">
+          <MoreVertical />
+        </ExportDropdown>
         <div className="bg-[#A1A1A10F]">
           <DataTable data={data} columns={CourseColumns} />
         </div>
