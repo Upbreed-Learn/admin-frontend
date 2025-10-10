@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { Input } from '@/components/ui/input';
 import { ArrowLeftRight, Search } from 'lucide-react';
-import { Link } from 'react-router';
 
 const Finance = () => {
   const [currency, setCurrency] = useQueryState('currency', {
