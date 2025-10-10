@@ -10,6 +10,7 @@ const Finance = () => {
   const [currency, setCurrency] = useQueryState('currency', {
     defaultValue: 'NGN',
   });
+  
   return (
     <div className="flex flex-col gap-3">
       <FinanceTabs />

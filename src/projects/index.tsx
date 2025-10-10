@@ -1,17 +1,23 @@
 import { Button } from '@/components/ui/button';
 import AvatarCustom from '@/components/ui/custom/avatar';
-import SelectInput from '@/components/ui/custom/select';
-import { ArrowUpDown, Plus } from 'lucide-react';
+import { ArrowDownAZ, ArrowUpAZ, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 import { useQueryState } from 'nuqs';
 import AddNewCourse from './add-new-course';
 import { SearchInput } from '@/components/ui/custom/input';
+import FilterIcon from '@/assets/jsx-icons/filter-icon';
+import FilterDialog from './filter';
 
 const Projects = () => {
   const [_, setAddNewCourse] = useQueryState('addNewCourse');
+  const [__, setFilter] = useQueryState('filter');
+  const [sort, setSort] = useQueryState('sort', {
+    defaultValue: 'desc',
+  });
 
   return (
     <>
+      <FilterDialog />
       <AddNewCourse />
       <div className="flex flex-col gap-9 rounded-lg bg-[#A1A1A10F] px-7 py-5">
         <div className="flex flex-col gap-3.5">
@@ -25,26 +31,26 @@ const Projects = () => {
               Add New Course
             </Button>
             <div className="flex items-center gap-3">
-              <ArrowUpDown className="text-[#305B43]" size={16} />
-              <SelectInput
-                placeholder="Filter"
-                className="w-24 bg-[#00230F] data-[placeholder]:text-white"
-                isFilter
-                options={[
-                  {
-                    value: 'All',
-                    label: 'All',
-                  },
-                  {
-                    value: 'Courses',
-                    label: 'Courses',
-                  },
-                  {
-                    value: 'Projects',
-                    label: 'Projects',
-                  },
-                ]}
-              />
+              <button
+                onClick={() =>
+                  setSort(value => (value === 'desc' ? 'asc' : 'desc'))
+                }
+                className="rounded-lg bg-gray-300 p-2 transition-transform active:scale-95"
+              >
+                {sort === 'desc' ? (
+                  <ArrowUpAZ className="text-[#305B43]" size={16} />
+                ) : (
+                  <ArrowDownAZ className="text-[#305B43]" size={16} />
+                )}
+                <span className="sr-only">Sort</span>
+              </button>
+              <Button
+                onClick={() => setFilter('true')}
+                className="bg-[#00230F] text-white hover:bg-[#00230F]/80"
+              >
+                <FilterIcon />
+                Filter
+              </Button>
             </div>
           </div>
         </div>
