@@ -4,48 +4,37 @@ import { useQueryState } from 'nuqs';
 import { cn } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { ArrowLeftRight, Search } from 'lucide-react';
 
 const Finance = () => {
   const [currency, setCurrency] = useQueryState('currency', {
     defaultValue: 'NGN',
   });
-  
+
   return (
     <div className="flex flex-col gap-3">
       <FinanceTabs />
       <div className="flex flex-col gap-2 self-end">
         <Button
-          disabled={currency === 'USD'}
-          className={cn(
-            'rounded-3xl',
-            currency === 'USD' && 'hover:white bg-white',
-          )}
-          onClick={() => setCurrency('USD')}
+          onClick={() =>
+            setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))
+          }
+          className="h-8 rounded-xl font-bold"
         >
-          Switch to USD
-        </Button>
-        <Button
-          onClick={() => setCurrency('NGN')}
-          disabled={currency === 'NGN'}
-          className={cn(
-            'rounded-3xl',
-            currency === 'NGN' && 'hover:white bg-white',
-          )}
-        >
-          Switch to NGN
+          {currency === 'NGN' ? '₦' : '$'}
+          <ArrowLeftRight />
         </Button>
       </div>
       <div className="flex items-center gap-7 rounded-lg pt-[1.625rem] pb-9 shadow-[0px_2.03px_2.03px_0px_#0000000A]">
-        <div className="flex flex-col gap-0.5">
+        <div className="flex basis-full flex-col gap-0.5">
           <p className="text-[2.5rem]/[100%] font-bold">N100.8K</p>
           <p className="text-[9px]/[100%] font-semibold">Monthly Revenue</p>
         </div>
-        <div className="flex flex-col gap-0.5 border-x border-[#9B9B9B] py-6 pr-8 pl-14">
+        <div className="flex basis-full flex-col gap-0.5 border-x border-[#9B9B9B] py-6 pr-8 pl-14">
           <p className="text-[2.5rem]/[100%] font-bold">$23.4M</p>
           <p className="text-[9px]/[100%] font-semibold">Yearly Revenue</p>
         </div>
-        <div className="flex flex-col gap-0.5">
+        <div className="flex basis-full flex-col gap-0.5">
           <p className="text-[2.5rem]/[100%] font-bold">$1B</p>
           <p className="text-[9px]/[100%] font-semibold">Total Revenue</p>
         </div>
@@ -83,6 +72,10 @@ const TransactionHistory = () => {
           .map((_, i) => (
             <HistoryCard key={i} />
           ))}
+
+        <Button className="self-end bg-transparent text-[8px]/[100%] font-semibold text-[#949494] underline hover:bg-transparent">
+          View more...
+        </Button>
       </div>
     </div>
   );

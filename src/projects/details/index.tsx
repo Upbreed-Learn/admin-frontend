@@ -1,10 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trash2Icon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router';
 import AddNewCourse, { items } from '../add-new-course';
 import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { useRef, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import z from 'zod';
@@ -22,8 +20,7 @@ import TextAreaInput from '@/components/ui/custom/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
-import { Separator } from '@/components/ui/separator';
-import UploadVideo from '@/assets/jsx-icons/upload-video';
+import { DraggableSections } from './draggable';
 
 const UpdateProject = () => {
   return (
@@ -37,24 +34,8 @@ const UpdateProject = () => {
               Back
             </Link>
           </Button>
-          {/* <div className="flex flex-col gap-2 rounded-lg bg-[#A1A1A10F] px-7 py-12"> */}
           <InstructorDetails />
-          {/* {Array(3)
-              .fill(null)
-              .map((_, i) => (
-                <ProjectSections key={i} />
-              ))}
-            <button className="w-max text-[10px]/[100%] font-bold text-[#6F6F6F]">
-              Add New
-            </button> */}
-          {/* </div> */}
         </div>
-        {/* <div className="flex justify-between">
-          <button className="text-[10px]/[100%] font-bold text-[#6F6F6F] underline">
-            DELETE COURSE
-          </button>
-          <Button onClick={() => setAddNewCourse('true')}>Update</Button>
-        </div> */}
       </div>
     </>
   );
@@ -121,7 +102,7 @@ const InstructorDetails = () => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: 'sections',
   });
@@ -135,9 +116,9 @@ const InstructorDetails = () => {
     });
   };
 
-  const handleDeleteSection = (index: number) => {
-    remove(index);
-  };
+  // const handleDeleteSection = (index: number) => {
+  //   remove(index);
+  // };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
@@ -310,94 +291,12 @@ const InstructorDetails = () => {
               )}
             />
           </fieldset>
-          {fields.map((field, index) => (
-            <fieldset
-              key={field.id}
-              className="flex w-full gap-5 border-b border-[#0000001A] pb-3"
-            >
-              <fieldset className="flex basis-full gap-1.5">
-                <span className="text-[10px]/[100%] font-medium text-[#9B9B9B]">
-                  {index + 1}.
-                </span>
-                <fieldset className="flex basis-full flex-col gap-3 rounded bg-[#D9D9D980] px-4 pt-4 pb-3 text-xs/[100%] font-medium text-[#C8C8C8]">
-                  <FormField
-                    control={form.control}
-                    name={`sections.${index}.title`}
-                    render={({ field }) => (
-                      <TextInput
-                        field={field}
-                        placeholder="Title"
-                        className="h-auto bg-transparent shadow-none"
-                        validated
-                      />
-                    )}
-                  />
-                  <Separator className="bg-[#0000001A]" />
-                  <FormField
-                    control={form.control}
-                    name={`sections.${index}.description`}
-                    render={({ field }) => (
-                      <TextInput
-                        field={field}
-                        placeholder="Description"
-                        className="h-auto bg-transparent shadow-none"
-                        validated
-                      />
-                    )}
-                  />
-                </fieldset>
-              </fieldset>
-
-              <fieldset className="flex gap-6">
-                <div
-                  className="flex !w-40 flex-col items-center justify-center gap-1.5 overflow-hidden rounded bg-[#D9D9D9]"
-                  onClick={() => {
-                    // trigger upload logic here
-                  }}
-                >
-                  <UploadVideo />
-                  <p className="text-[7px]/[100%] text-[#949494]">
-                    Upload Video
-                  </p>
-                </div>
-
-                <div
-                  className={cn(
-                    'flex items-center gap-5',
-                    index + 1 === 1 && 'hidden',
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteSection(index)}
-                  >
-                    <Trash2Icon className="text-[#9B9B9B]" />
-                  </button>
-                  <div className="flex flex-col items-center gap-[6px]">
-                    <FormField
-                      control={form.control}
-                      name={`sections.${index}.isPublic`}
-                      render={({ field }) => (
-                        <>
-                          <Switch
-                            id={`public-${index}`}
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                          <Label
-                            htmlFor={`public-${index}`}
-                            className="text-center text-xs/[100%] font-medium text-[#9B9B9B]"
-                          >
-                            Make video go public
-                          </Label>
-                        </>
-                      )}
-                    />
-                  </div>
-                </div>
-              </fieldset>
-            </fieldset>
-          ))}
+          <DraggableSections
+            form={form}
+            fields={fields}
+            move={move}
+            remove={remove}
+          />
           <button
             type="button"
             onClick={handleAddSection}
@@ -415,51 +314,7 @@ const InstructorDetails = () => {
           </button>
           <Button>Update</Button>
         </div>
-        {/* <Button type="submit" className="self-end">
-          Create New Course
-        </Button> */}
       </form>
     </Form>
   );
 };
-
-// const ProjectSections = () => {
-//   return (
-//     <div>
-//       <div className="flex w-full gap-5 border-b border-[#0000001A] pb-3">
-//         <div className="flex w-full gap-1.5">
-//           <span className="text-[10px]/[100%] font-medium text-[#9B9B9B]">
-//             1.
-//           </span>
-//           <div className="flex w-full flex-col gap-3 rounded bg-[#D9D9D980] px-4 pt-4 pb-3 text-xs/[100%] font-medium text-[#C8C8C8]">
-//             <p className="border-b border-[#0000001A] pb-3">Title</p>
-//             <p>Description</p>
-//           </div>
-//         </div>
-//         <div className="flex gap-6">
-//           <div className="h-20 w-[10rem] overflow-hidden rounded">
-//             <img
-//               src="https://i.pravatar.cc/150?img=1"
-//               alt="Avatar"
-//               className="size-full object-cover"
-//             />
-//           </div>
-//           <div className="flex items-center gap-5">
-//             <button className="">
-//               <Trash2Icon className="text-[#9B9B9B]" />
-//             </button>
-//             <div className="flex flex-col items-center gap-[6px]">
-//               <Switch id="airplane-mode" />
-//               <Label
-//                 htmlFor="airplane-mode"
-//                 className="text-center text-xs/[100%] font-medium text-[#9B9B9B]"
-//               >
-//                 Make video go public
-//               </Label>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
