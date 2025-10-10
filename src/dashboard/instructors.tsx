@@ -1,10 +1,14 @@
 import AvatarCustom from '@/components/ui/custom/avatar';
-import { EyeIcon } from 'lucide-react';
+import ExportDropdown from '@/components/ui/custom/dropdown-menu';
+import { EyeIcon, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router';
 
 const Instructors = () => {
   return (
-    <div className="hide-scrollbar flex h-[14.09rem] basis-full flex-col gap-8 overflow-auto rounded-[10px] px-4 py-7 shadow-[0px_2px_4px_0px_#0000001A]">
+    <div className="hide-scrollbar relative flex h-[14.09rem] basis-full flex-col gap-8 overflow-auto rounded-[10px] px-4 pt-8 pb-7 shadow-[0px_2px_4px_0px_#0000001A]">
+      <ExportDropdown className="absolute top-2 right-2 self-end">
+        <MoreVertical size={16} />
+      </ExportDropdown>
       <div className="flex flex-col gap-2">
         {Array(12)
           .fill(null)
@@ -13,7 +17,7 @@ const Instructors = () => {
           ))}
       </div>
       <Link
-        to={'/instructors'}
+        to={'/courses'}
         className="text-center text-[8px]/[100%] font-semibold text-[#949494] underline"
       >
         Read more...

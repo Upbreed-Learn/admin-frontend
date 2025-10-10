@@ -1,4 +1,3 @@
-import ExportIcon from '@/assets/jsx-icons/export-icon';
 import FileIcon from '@/assets/jsx-icons/file-icon';
 import MoneyIcon from '@/assets/jsx-icons/money-icon';
 import PeopleAlt from '@/assets/jsx-icons/people-alt';
@@ -10,14 +9,21 @@ import SubscriberGrowth from './subscriber-growth';
 import TotalRevenueChart from './total-revenue';
 import { Link } from 'react-router';
 import Instructors from './instructors';
+import { cn } from '@/lib/utils';
+import { ArrowLeftRight, MoreVertical } from 'lucide-react';
+import { useQueryState } from 'nuqs';
+import ExportDropdown from '@/components/ui/custom/dropdown-menu';
 
 const Dashboard = () => {
+  const [currency, setCurrency] = useQueryState('currency', {
+    defaultValue: 'NGN',
+  });
+
   return (
     <div className="flex flex-col gap-1.5 pb-6">
-      <Button className="cursor-pointer self-end border-[0.5px] border-[#6F6F6F] bg-white text-[8px]/3 font-bold text-[#6F6F6F] hover:bg-white">
-        <ExportIcon />
-        Save Report
-      </Button>
+      <ExportDropdown className="self-end">
+        <MoreVertical />
+      </ExportDropdown>
       <div className="flex flex-col gap-3.5">
         <div className="flex items-center gap-10">
           <SummaryCard title="Total Reports" value={'15K'}>
@@ -29,8 +35,21 @@ const Dashboard = () => {
           <SummaryCard title="Subscribers" value={'10.7M'}>
             <PeopleAlt />
           </SummaryCard>
-          <SummaryCard title="Total Revenue" value={'$1.5B'}>
+          <SummaryCard
+            title="Total Revenue"
+            value={'$1.5B'}
+            className="relative"
+          >
             <MoneyIcon />
+            <Button
+              onClick={() =>
+                setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))
+              }
+              className="absolute top-1.5 right-2 h-8 rounded-xl font-bold"
+            >
+              {currency === 'NGN' ? '₦' : '$'}
+              <ArrowLeftRight />
+            </Button>
           </SummaryCard>
         </div>
         <div className="flex gap-5">
@@ -60,15 +79,21 @@ const SummaryCard = (props: {
   title: string;
   value: string;
   children: ReactNode;
+  className?: string;
 }) => {
-  const { title, value, children } = props;
+  const { title, value, children, className } = props;
   return (
-    <div className="flex w-max items-end gap-3 rounded-xl bg-[#305B43] py-4 pr-3 pl-5">
-      <div>
+    <div
+      className={cn(
+        'flex basis-full items-end gap-3 rounded-xl bg-[#305B43] py-4 pr-3 pl-5',
+        className,
+      )}
+    >
+      <div className="w-full">
         <p className="text-4xl/[100%] font-semibold text-white">{value}</p>
         <p className="text-right text-[8px]/[100%] text-[#D0EA50]">{title}</p>
       </div>
-      <div className="flex size-4 items-center justify-center rounded-full bg-[#FFFFFF66]">
+      <div className="flex size-4 shrink-0 items-center justify-center rounded-full bg-[#FFFFFF66]">
         {children}
       </div>
     </div>

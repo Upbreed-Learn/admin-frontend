@@ -1,11 +1,9 @@
-import { MoreVertical } from 'lucide-react';
-
 const Subscriber = () => {
   return (
     <div className="flex basis-full flex-col gap-2.5 rounded-lg px-5 py-11 shadow-[0px_2.03px_2.03px_0px_#0000000A]">
-      <button className="flex size-5 cursor-pointer items-center justify-center self-end transition-transform active:scale-95">
+      {/* <button className="flex size-5 cursor-pointer items-center justify-center self-end transition-transform active:scale-95">
         <MoreVertical className="text-[#A3A3A3]" />
-      </button>
+      </button> */}
       <div className="flex items-center gap-8">
         <SubscriberChart />
         <div className="flex flex-col gap-3">
