@@ -28,6 +28,7 @@ const UpdateProject = () => {
       <AddNewCourse />
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-12">
+          {/* Add Warning modal if form is edited */}
           <Button asChild className="w-max">
             <Link to={'/projects'}>
               <ArrowLeft />
@@ -46,13 +47,7 @@ export default UpdateProject;
 const sectionSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  video: z
-    .union([
-      z.instanceof(File), // uploaded file
-      z.url(), // optional existing URL
-      z.undefined(), // nothing yet
-    ])
-    .optional(),
+  video: z.union([z.instanceof(File), z.url(), z.undefined()]).optional(),
   isPublic: z.boolean(),
 });
 
