@@ -11,6 +11,7 @@ import OneOneSessions from './1-1-sessions';
 import { NuqsAdapter } from 'nuqs/adapters/react';
 import UpdateProject from './projects/details';
 import Courses from './courses';
+import CreateBlog from './blogs/create';
 
 const router = createBrowserRouter([
   {
@@ -48,7 +49,16 @@ const router = createBrowserRouter([
       },
       {
         path: '/blog',
-        element: <Blogs />,
+        children: [
+          {
+            index: true,
+            element: <Blogs />,
+          },
+          {
+            path: '/blog/create',
+            element: <CreateBlog />,
+          },
+        ],
       },
       // {
       //   path: '/settings',

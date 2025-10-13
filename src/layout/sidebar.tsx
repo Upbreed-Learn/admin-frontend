@@ -158,21 +158,21 @@ const Sidebar = () => {
                   />
                 </div>
               )}
-              {route.path === '/blog' && (
+              {route.path.includes('blog') && (
                 <div className="grid-stack grid">
                   <BlogIcon
                     stroke={'#737373'}
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/blog' && 'opacity-100',
-                      pathname !== '/blog' && 'group-hover:!opacity-100',
+                      pathname.includes('blog') && 'opacity-100',
+                      !pathname.includes('blog') && 'group-hover:!opacity-100',
                     )}
                   />
                   <BlogIcon
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/blog' && 'opacity-0',
-                      pathname !== '/blog' && 'group-hover:!opacity-0',
+                      pathname.includes('blog') && 'opacity-0',
+                      !pathname.includes('blog') && 'group-hover:!opacity-0',
                     )}
                   />
                 </div>
