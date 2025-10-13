@@ -20,10 +20,11 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   className?: string;
   children?: ReactNode;
+  headerClassName?: string;
 }
 
 const DataTable = <TData, TValue>(props: DataTableProps<TData, TValue>) => {
-  const { columns, data, className, children } = props;
+  const { columns, data, className, children, headerClassName } = props;
 
   const table = useReactTable({
     data,
@@ -32,16 +33,16 @@ const DataTable = <TData, TValue>(props: DataTableProps<TData, TValue>) => {
   });
 
   return (
-    <Table className={cn(className)}>
+    <Table>
       <TableHeader>
         {table.getHeaderGroups().map(headerGroup => (
-          <TableRow key={headerGroup.id} className="">
+          <TableRow key={headerGroup.id}>
             {headerGroup.headers.map(header => {
               const meta = header.column.columnDef.meta as any;
               return (
                 <TableHead
                   key={header.id}
-                  className={cn(meta?.headerClassName)}
+                  className={cn(meta?.headerClassName, headerClassName)}
                 >
                   {header.isPlaceholder
                     ? null
@@ -60,7 +61,10 @@ const DataTable = <TData, TValue>(props: DataTableProps<TData, TValue>) => {
           table.getRowModel().rows.map(row => (
             <TableRow
               key={row.id}
-              className="bg-[#305B43] text-[10px]/[14px] font-medium text-white even:bg-[#00230FCC] hover:bg-[#00230F]"
+              className={cn(
+                'bg-[#305B43] text-[10px]/[14px] font-medium text-white even:bg-[#00230FCC] hover:bg-[#00230F]',
+                className,
+              )}
             >
               {row.getVisibleCells().map(cell => {
                 const meta = cell.column.columnDef.meta as any;
