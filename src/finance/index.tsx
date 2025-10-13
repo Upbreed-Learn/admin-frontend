@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { Input } from '@/components/ui/input';
 import { ArrowLeftRight, Search } from 'lucide-react';
+import MoreTransactionHistoryModal from './more-transaction-history-modal';
 
 const Finance = () => {
   const [currency, setCurrency] = useQueryState('currency', {
@@ -50,34 +51,42 @@ const Finance = () => {
 export default Finance;
 
 const TransactionHistory = () => {
+  const [_, setViewMore] = useQueryState('viewMore');
+
   return (
-    <div className="flex flex-1/3 flex-col gap-7 rounded bg-[#E3E3E333] p-3.5">
-      <div className="flex items-center justify-between">
-        <p className="text-[8px]/[100%] font-semibold">Transaction History</p>
-        <div className={cn('relative w-full max-w-20')}>
-          <Input
-            type="search"
-            placeholder="Search"
-            className="h-3.5 rounded-[1.25rem] pl-4 text-[5px]/[100%] placeholder:text-[5px]/[100%]"
-          />
-          <Search
-            className="absolute top-3.5 left-1.5 -translate-y-1/2"
-            size={6}
-          />
+    <>
+      <MoreTransactionHistoryModal />
+      <div className="flex flex-1/3 flex-col gap-7 rounded bg-[#E3E3E333] p-3.5">
+        <div className="flex items-center justify-between">
+          <p className="text-[8px]/[100%] font-semibold">Transaction History</p>
+          <div className={cn('relative w-full max-w-20')}>
+            <Input
+              type="search"
+              placeholder="Search"
+              className="h-3.5 rounded-[1.25rem] pl-4 text-[5px]/[100%] placeholder:text-[5px]/[100%]"
+            />
+            <Search
+              className="absolute top-3.5 left-1.5 -translate-y-1/2"
+              size={6}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-3">
+          {Array(7)
+            .fill(null)
+            .map((_, i) => (
+              <HistoryCard key={i} />
+            ))}
+
+          <Button
+            onClick={() => setViewMore('true')}
+            className="cursor-pointer self-end bg-transparent text-[8px]/[100%] font-semibold text-[#949494] underline hover:bg-transparent"
+          >
+            View more...
+          </Button>
         </div>
       </div>
-      <div className="flex flex-col gap-3">
-        {Array(7)
-          .fill(null)
-          .map((_, i) => (
-            <HistoryCard key={i} />
-          ))}
-
-        <Button className="self-end bg-transparent text-[8px]/[100%] font-semibold text-[#949494] underline hover:bg-transparent">
-          View more...
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };
 

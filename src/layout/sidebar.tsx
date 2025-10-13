@@ -8,7 +8,7 @@ import Coin from '@/assets/jsx-icons/coin';
 import UsersMore from '@/assets/jsx-icons/users-more';
 import BlogIcon from '@/assets/jsx-icons/blog-icon';
 import Logout from '@/assets/jsx-icons/logout';
-import Settings from '@/assets/jsx-icons/settings';
+// import Settings from '@/assets/jsx-icons/settings';
 
 const ROUTES = [
   {
@@ -202,13 +202,13 @@ const Sidebar = () => {
           ))}
         </div>
         <div className="flex flex-col gap-4 px-6">
-          <Link
+          {/* <Link
             to="/settings"
             className="flex items-center gap-4 text-xs/[100%] font-semibold text-white"
           >
             <Settings />
             Settings
-          </Link>
+          </Link> */}
           <button className="flex cursor-pointer items-center gap-4 text-xs/[100%] font-semibold text-white">
             <Logout />
             <span>Logout</span>
