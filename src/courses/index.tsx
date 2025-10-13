@@ -1,5 +1,5 @@
 import { SearchInput } from '@/components/ui/custom/input';
-import DataTable from './data-table';
+import DataTable from '../components/data-table';
 import { CourseColumns, type CoursesType } from './columns';
 import ExportDropdown from '@/components/ui/custom/dropdown-menu';
 import { MoreVertical } from 'lucide-react';
