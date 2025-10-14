@@ -1,5 +1,7 @@
 import DataTable from '@/components/data-table';
 import { SessionColumns } from './columns';
+import ExportDropdown from '@/components/ui/custom/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 
 const OneOneSessions = () => {
   const data = [
@@ -31,7 +33,10 @@ const OneOneSessions = () => {
           Completed Sessions
         </p>
       </div>
-      <div className="hide-scrollbar h-[29.5625rem] overflow-auto rounded-[9px] bg-[#A1A1A10F] px-14 py-8">
+      <div className="hide-scrollbar flex h-[29.5625rem] flex-col gap-4 overflow-auto rounded-[9px] bg-[#A1A1A10F] px-14 py-8">
+        <ExportDropdown className="self-end">
+          <MoreVertical />
+        </ExportDropdown>
         <DataTable
           columns={SessionColumns}
           data={data}

@@ -221,7 +221,7 @@ const InstructorDetails = () => {
                 <FormItem className="flex-1/4">
                   <div
                     className={cn(
-                      '_w-[8.9375rem] flex h-[18.1875rem] basis-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[10px] bg-[#D9D9D9]',
+                      'flex h-[18.1875rem] basis-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[10px] bg-[#D9D9D9]',
                       isDragging && 'border-[#305B43] bg-[#e5e5e5]',
                     )}
                     onDragOver={e => {

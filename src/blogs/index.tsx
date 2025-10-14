@@ -82,7 +82,7 @@ const Blogs = () => {
                   </button>
                 </li>
               </ul>
-              <ul className="flex items-center gap-2 rounded bg-[#305B43] p-2 [&_button]:text-[9px]/[100%] [&_button]:font-semibold">
+              <ul className="flex items-center gap-2 rounded bg-[#305B43] px-2 [&_button]:text-[9px]/[100%] [&_button]:font-semibold">
                 <li>
                   <button
                     onClick={() => setCategory('press')}
@@ -185,7 +185,7 @@ const BlogCard = () => {
             1:30MIN READ
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[5.15px]/[100%] font-semibold text-white uppercase [&>span]:bg-[#9B9B9B] [&>span]:px-1 [&>span]:py-0.5">
+        <div className="flex items-center gap-1 text-[5.15px]/[100%] font-semibold text-[#D0EA50] uppercase [&>span]:bg-[#305B43] [&>span]:px-1 [&>span]:py-0.5">
           <span>FASHION</span>
           <span>BEAUTY</span>
         </div>
