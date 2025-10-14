@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useParams } from 'react-router';
 import Sidebar from './sidebar';
 import { cn } from '@/lib/utils';
+import 'prosemirror-view/style/prosemirror.css';
 
 const RootLayout = () => {
   const { id } = useParams();
