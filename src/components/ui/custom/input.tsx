@@ -64,7 +64,7 @@ const TextInput = (props: TextInputProps) => {
           placeholder={placeholder}
           disabled={disabled}
           className={cn(
-            'h-11 border-none bg-[#D9D9D980] placeholder:text-[10px]',
+            'h-11 border-0 bg-[#D9D9D980] placeholder:text-[10px]',
             className,
           )}
           {...field}

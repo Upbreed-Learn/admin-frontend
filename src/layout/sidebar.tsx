@@ -8,7 +8,6 @@ import Coin from '@/assets/jsx-icons/coin';
 import UsersMore from '@/assets/jsx-icons/users-more';
 import BlogIcon from '@/assets/jsx-icons/blog-icon';
 import Logout from '@/assets/jsx-icons/logout';
-// import Settings from '@/assets/jsx-icons/settings';
 
 const ROUTES = [
   {
@@ -43,6 +42,7 @@ const ROUTES = [
 
 const Sidebar = () => {
   const { pathname } = useLocation();
+
   return (
     <aside className="hide-scrollbar fixed flex h-screen w-max flex-col gap-16 overflow-auto bg-[#305B43] px-11 pt-16">
       <Link to={'/'} className="h-9 w-[9.625rem]">
@@ -202,13 +202,6 @@ const Sidebar = () => {
           ))}
         </div>
         <div className="flex flex-col gap-4 px-6">
-          {/* <Link
-            to="/settings"
-            className="flex items-center gap-4 text-xs/[100%] font-semibold text-white"
-          >
-            <Settings />
-            Settings
-          </Link> */}
           <button className="flex cursor-pointer items-center gap-4 text-xs/[100%] font-semibold text-white">
             <Logout />
             <span>Logout</span>
