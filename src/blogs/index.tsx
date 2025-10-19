@@ -1,15 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/custom/input';
+import PaginationSection from '@/components/ui/custom/pagination';
 import SelectInput from '@/components/ui/custom/select';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
 import { cn } from '@/lib/utils';
 import {
   ArrowDownAZ,
@@ -147,7 +139,11 @@ const Blogs = () => {
             ))}
         </div>
       </div>
-      <PaginationSection />
+      <PaginationSection
+        currentPage={1}
+        totalPages={10}
+        setCurrentPage={() => {}}
+      />
     </div>
   );
 };
@@ -192,26 +188,5 @@ const BlogCard = () => {
         <Trash2 size={16} className="self-end text-[#9C9C9C]" />
       </div>
     </div>
-  );
-};
-
-const PaginationSection = () => {
-  return (
-    <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious href="#" />
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#">1</PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationEllipsis />
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationNext href="#" />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
   );
 };

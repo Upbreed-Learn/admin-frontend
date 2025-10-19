@@ -7,16 +7,18 @@ import Finance from './finance';
 import Instructors from './instructors';
 import Blogs from './blogs';
 import OneOneSessions from './1-1-sessions';
-// import Settings from './settings';
 import { NuqsAdapter } from 'nuqs/adapters/react';
 import UpdateProject from './projects/details';
 import Courses from './courses';
 import CreateBlog from './blogs/create';
+import Login from './auth';
+import { checkAuthLoader } from './lib/utils';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    loader: checkAuthLoader,
     children: [
       {
         path: '/',
@@ -60,15 +62,15 @@ const router = createBrowserRouter([
           },
         ],
       },
-      // {
-      //   path: '/settings',
-      //   element: <Settings />,
-      // },
       {
         path: '/1-1-sessions',
         element: <OneOneSessions />,
       },
     ],
+  },
+  {
+    path: '/auth/login',
+    element: <Login />,
   },
 ]);
 
