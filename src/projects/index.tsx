@@ -8,19 +8,13 @@ import { SearchInput } from '@/components/ui/custom/input';
 import FilterIcon from '@/assets/jsx-icons/filter-icon';
 import FilterDialog from './filter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense, useState } from 'react';
-import { QUERIES } from '@/queries';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import PaginationSection from '@/components/ui/custom/pagination';
-import { ErrorBoundary } from 'react-error-boundary';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ProjectsType } from '@/lib/constants';
-
-const useGetCourses = (page?: number, limit?: number) => {
-  return useSuspenseQuery({
-    queryKey: ['courses', { page, limit }],
-    queryFn: () => QUERIES.getCourses(page, limit),
-  });
-};
+import PaginationSection from '@/components/ui/custom/pagination';
+import { useGetCourses } from '@/queries/hooks';
+import ErrorState from '@/components/error';
+import EmptyState from '@/components/empty';
 
 const Projects = () => {
   const [page, setPage] = useState(1);
@@ -29,8 +23,9 @@ const Projects = () => {
   const [sort, setSort] = useQueryState('sort', {
     defaultValue: 'desc',
   });
+  const queryClient = useQueryClient();
 
-  const { data } = useGetCourses(page);
+  const { data, isPending, isError } = useGetCourses(page);
 
   const projectData: ProjectsType[] = data?.data?.data;
 
@@ -73,36 +68,34 @@ const Projects = () => {
             </div>
           </div>
         </div>
-        <ErrorBoundary FallbackComponent={ProjectsErrorState}>
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-3 gap-5">
-                {Array(9)
-                  .fill(null)
-                  .map((_, i) => (
-                    <ProjectCardSkeleton key={i} />
-                  ))}
-              </div>
+        {isError ? (
+          <ErrorState
+            onRetry={() =>
+              queryClient.invalidateQueries({ queryKey: ['courses'] })
             }
-          >
-            {projectData.length === 0 ? (
-              <ProjectsEmptyState onAdd={() => setAddNewCourse('true')} />
-            ) : (
-              <div className="grid grid-cols-3 gap-5">
-                {projectData?.map((_, index) => (
-                  <ProjectCard key={index} />
-                ))}
-              </div>
-            )}
+          />
+        ) : (
+          <div>
+            <div className="grid grid-cols-3 gap-5">
+              {isPending ? (
+                Array(9)
+                  .fill(null)
+                  .map((_, i) => <ProjectCardSkeleton key={i} />)
+              ) : projectData.length === 0 ? (
+                <EmptyState onAdd={() => setAddNewCourse('true')} />
+              ) : (
+                projectData?.map((_, index) => <ProjectCard key={index} />)
+              )}
+            </div>
             {projectData && projectData.length > 0 && (
               <PaginationSection
                 currentPage={page}
                 setCurrentPage={setPage}
-                totalPages={data.data.metadata.lastPage}
+                totalPages={data?.data?.metadata.lastPage}
               />
             )}
-          </Suspense>
-        </ErrorBoundary>
+          </div>
+        )}
       </div>
     </>
   );
@@ -158,64 +151,3 @@ export const ProjectCardSkeleton = () => (
     <Skeleton className="mt-3 h-4 w-12 rounded bg-[#DBDBDB]" />
   </div>
 );
-
-export const ProjectsEmptyState = ({ onAdd }: { onAdd?: () => void }) => {
-  return (
-    <div className="flex w-full flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-[#D9D9D9] bg-white/30 p-8 text-center">
-      <svg
-        className="h-10 w-10 text-[#9B9B9B]"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M3 7v13a1 1 0 001 1h16a1 1 0 001-1V7M3 7l9-4 9 4M12 3v4"
-        />
-      </svg>
-      <p className="text-sm font-semibold text-[#305B43]">No projects yet</p>
-      <p className="text-xs text-[#6B6B6B]">
-        Add your first course to get started.
-      </p>
-      <Button onClick={onAdd} className="mt-2">
-        <Plus />
-        Add New Course
-      </Button>
-    </div>
-  );
-};
-
-export const ProjectsErrorState = ({ error }: { error: Error }) => {
-  return (
-    <div className="flex w-full flex-col items-center justify-center gap-4 rounded-lg bg-[#FFF5F5] p-6">
-      <svg
-        className="h-10 w-10 text-[#D14343]"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
-        />
-      </svg>
-      <p className="text-sm font-semibold text-[#D14343]">
-        Something went wrong
-      </p>
-      <p className="text-xs text-[#6B6B6B]">
-        {error.message ?? 'Unable to load projects. Please try again.'}
-      </p>
-      <div className="flex gap-2">
-        <Button asChild>
-          <Link to={'/'}>Go Home</Link>
-        </Button>
-      </div>
-    </div>
-  );
-};

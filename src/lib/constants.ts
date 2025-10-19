@@ -20,3 +20,13 @@ export interface ProjectsType {
   status: string;
   createdAt: string;
 }
+
+export interface InstructorType {
+  id: string;
+  fname: string;
+  lname: string;
+  email: string;
+  description: string;
+  image: string;
+  createdAt: string;
+}
