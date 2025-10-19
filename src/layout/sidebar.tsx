@@ -1,4 +1,4 @@
-import { Link, NavLink, useLocation } from 'react-router';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import logo from '../assets/upbreed-logo.svg';
 import DashboardIcon from '@/assets/jsx-icons/dashboard-icon';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import Coin from '@/assets/jsx-icons/coin';
 import UsersMore from '@/assets/jsx-icons/users-more';
 import BlogIcon from '@/assets/jsx-icons/blog-icon';
 import Logout from '@/assets/jsx-icons/logout';
+import Cookies from 'js-cookie';
 
 const ROUTES = [
   {
@@ -42,6 +43,7 @@ const ROUTES = [
 
 const Sidebar = () => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   return (
     <aside className="hide-scrollbar fixed flex h-screen w-max flex-col gap-16 overflow-auto bg-[#305B43] px-11 pt-16">
@@ -202,7 +204,12 @@ const Sidebar = () => {
           ))}
         </div>
         <div className="flex flex-col gap-4 px-6">
-          <button className="flex cursor-pointer items-center gap-4 text-xs/[100%] font-semibold text-white">
+          <button
+            onClick={() => {
+              (Cookies.remove('rf'), navigate('/auth/login'));
+            }}
+            className="flex cursor-pointer items-center gap-4 text-xs/[100%] font-semibold text-white"
+          >
             <Logout />
             <span>Logout</span>
           </button>

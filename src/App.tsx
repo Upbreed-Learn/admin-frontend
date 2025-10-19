@@ -12,11 +12,13 @@ import UpdateProject from './projects/details';
 import Courses from './courses';
 import CreateBlog from './blogs/create';
 import Login from './auth';
+import { checkAuthLoader } from './lib/utils';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    loader: checkAuthLoader,
     children: [
       {
         path: '/',
