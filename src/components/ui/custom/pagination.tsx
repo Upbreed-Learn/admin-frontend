@@ -7,7 +7,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '../pagination';
-import { cn } from '@/lib/utils';
+// import { cn } from '@/lib/utils';
 
 const PaginationSection = (props: {
   currentPage: number;
