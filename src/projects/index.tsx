@@ -8,13 +8,16 @@ import { SearchInput } from '@/components/ui/custom/input';
 import FilterIcon from '@/assets/jsx-icons/filter-icon';
 import FilterDialog from './filter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import type { ProjectsType } from '@/lib/constants';
+import { useEffect, useState, type ChangeEvent } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CourseDetailsType } from '@/lib/constants';
 import PaginationSection from '@/components/ui/custom/pagination';
 import { useGetCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
 import EmptyState from '@/components/empty';
+import { QUERIES } from '@/queries';
+import { useDebounce } from '@/lib/hooks/useDebounce';
+import { cn } from '@/lib/utils';
 // import { useForm } from 'react-hook-form';
 // import { https } from '@/lib/https';
 
@@ -26,18 +29,52 @@ import EmptyState from '@/components/empty';
 //   name: string;
 // };
 
+const useGetSearchedCourses = (
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
+  return useQuery({
+    queryKey: ['courses', { page, limit, search }],
+    queryFn: () => QUERIES.getCourses(page, limit, search),
+    enabled: !!search,
+  });
+};
+
 const Projects = () => {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [activeList, setActiveList] = useState<CourseDetailsType[]>([]);
   const [_, setAddNewCourse] = useQueryState('addNewCourse');
   const [__, setFilter] = useQueryState('filter');
   const [sort, setSort] = useQueryState('sort', {
     defaultValue: 'desc',
   });
+  const debouncedSearch = useDebounce(search.trim(), 1000);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  };
+
   const queryClient = useQueryClient();
 
   const { data, isPending, isError } = useGetCourses(page);
+  const { data: searchedCoursesData } = useGetSearchedCourses(
+    page,
+    20,
+    debouncedSearch,
+  );
 
-  const projectData: ProjectsType[] = data?.data?.data;
+  const projectData: CourseDetailsType[] = data?.data?.data;
+  const searchedCourses: CourseDetailsType[] = searchedCoursesData?.data?.data;
+
+  useEffect(() => {
+    if (debouncedSearch.length > 0) {
+      setActiveList(searchedCourses);
+    } else {
+      setActiveList(projectData);
+    }
+  }, [debouncedSearch, searchedCourses, projectData]);
 
   // const { register, handleSubmit, reset } = useForm<FormData>();
 
@@ -58,7 +95,7 @@ const Projects = () => {
       <AddNewCourse />
       <div className="flex flex-col gap-9 rounded-lg bg-[#A1A1A10F] px-7 py-5">
         <div className="flex flex-col gap-3.5">
-          <SearchInput className="self-end" />
+          <SearchInput className="self-end" onChange={e => handleChange(e)} />
           <div className="flex items-center justify-between">
             <Button
               onClick={() => setAddNewCourse('true')}
@@ -98,16 +135,18 @@ const Projects = () => {
             }
           />
         ) : (
-          <div>
+          <div className="flex flex-col gap-3">
             <div className="grid grid-cols-3 gap-5">
               {isPending ? (
                 Array(9)
                   .fill(null)
                   .map((_, i) => <ProjectCardSkeleton key={i} />)
-              ) : projectData.length === 0 ? (
+              ) : activeList?.length === 0 ? (
                 <EmptyState onAdd={() => setAddNewCourse('true')} />
               ) : (
-                projectData?.map((_, index) => <ProjectCard key={index} />)
+                activeList?.map(course => (
+                  <ProjectCard key={course.id} details={course} />
+                ))
               )}
             </div>
             {projectData && projectData.length > 0 && (
@@ -153,34 +192,44 @@ const Projects = () => {
 
 export default Projects;
 
-const ProjectCard = () => {
+const ProjectCard = (props: { details: CourseDetailsType }) => {
+  const { ...details } = props;
   return (
-    <div className="relative rounded-lg bg-[#305B43] px-5 py-6 transition-colors hover:bg-[#00230F]">
+    <div
+      className={cn(
+        'relative rounded-lg bg-[#305B43] px-5 py-6 hover:bg-[#00230F]',
+      )}
+    >
       <div className="flex items-center justify-end gap-2.5">
         <div className="flex basis-full flex-col gap-1.5 text-end">
           <Link
-            to={'/projects/1'}
+            to={`/projects/${details.details.id}`}
             className="border-b border-[#FFFFFF4D] pb-1.5"
           >
             <span className="absolute inset-0"></span>
             <p className="text-xs font-extrabold text-white">
-              Selling Anything
+              {details.details.title}
             </p>
           </Link>
           <div className="flex flex-col gap-1">
-            <p className="text-[7.18px] text-white">1H:30:00</p>
-            <p className="text-[7.18px] font-semibold text-white">10 Lessons</p>
+            <p className="text-[7.18px] text-white">
+              {details.details.preview.durationInMinutes}
+            </p>
+            <p className="text-[7.18px] font-semibold text-white">
+              {details.details.preview.lessonCount} Lesson
+              {details.details.preview.lessonCount > 1 && `s`}
+            </p>
           </div>
         </div>
         <AvatarCustom
-          src={'https://i.pravatar.cc/150?img=1'}
-          alt={'Avatar'}
-          fallback={'U'}
+          src={details.details.thumbnail}
+          alt={'Course Preview'}
+          fallback={details.details.instructor.fname[0].charAt(0)}
           className="size-14"
         />
       </div>
       <p className="w-max rounded-md bg-[#D0EA50] px-2 py-0.5 text-[6px] font-semibold">
-        MUSIC
+        {details.details.title}
       </p>
     </div>
   );

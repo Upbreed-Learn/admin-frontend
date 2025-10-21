@@ -41,15 +41,21 @@ export const MUTATIONS = {
 };
 
 export const QUERIES = {
-  getCourses: async function (page?: number, limit?: number) {
+  getCourses: async function (page?: number, limit?: number, search?: string) {
     limit = limit || LIMIT;
     const params = new URLSearchParams();
 
     if (page) params.append('page', `${page}`);
     if (limit) params.append('limit', `${limit}`);
+    if (search) params.append('query', `${search}`);
 
     const queryString = params.toString();
-    const url = queryString ? `/course?${queryString}` : '/course';
+    const url =
+      queryString && search
+        ? `/course/search?${queryString}`
+        : queryString && !search
+          ? `/course?${queryString}`
+          : '/course';
 
     return await https.get(url);
   },
@@ -80,5 +86,8 @@ export const QUERIES = {
   },
   getCategories: async function () {
     return await https.get(`/category`);
+  },
+  getCourse: async function (id: number) {
+    return await https.get(`/course/${id}`);
   },
 };

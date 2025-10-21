@@ -167,8 +167,6 @@ const AddNewCourse = () => {
     },
   });
 
-  console.log(form.watch('items'));
-
   const { mutate, isPending } = useSendRequest<CourseType, any>({
     mutationFn: (data: CourseType) => MUTATIONS.course(data),
     errorToast: {
@@ -195,14 +193,8 @@ const AddNewCourse = () => {
       description: values.courseDescription,
       image: values.image,
       categories: [Number(values.items)],
+      isActive: true,
     });
-    // console.log(
-    //   +values.fullName,
-    //   values.courseTitle,
-    //   values.courseDescription,
-    //   values.image,
-    //   [Number(values.items)],
-    // );
   }
 
   return (
