@@ -1,10 +1,8 @@
 import { Button } from '@/components/ui/button';
 import FinanceTabs from './tabs';
 import { useQueryState } from 'nuqs';
-import { cn } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
-import { Input } from '@/components/ui/input';
-import { ArrowLeftRight, Search } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import MoreTransactionHistoryModal from './more-transaction-history-modal';
 
 const Finance = () => {
