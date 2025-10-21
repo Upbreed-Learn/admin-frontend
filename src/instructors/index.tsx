@@ -11,7 +11,7 @@ import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 import { useQueries } from '@tanstack/react-query';
 import { QUERIES } from '@/queries';
-import type { InstructorType } from '@/lib/constants';
+import type { InstructorDetailsType } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
 import PaginationSection from '@/components/ui/custom/pagination';
@@ -44,7 +44,7 @@ export const useGetInstructors = (
 const Instructors = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [activeList, setActiveList] = useState<InstructorType[]>([]);
+  const [activeList, setActiveList] = useState<InstructorDetailsType[]>([]);
   const debouncedSearch = useDebounce(search.trim(), 1000);
   const [_, setAddInstructor] = useQueryState('instructorSetup');
   const [allInstructors, searchedInstructors] = useGetInstructors(
@@ -57,9 +57,10 @@ const Instructors = () => {
     setSearch(event.target.value);
   };
 
-  const searchedInstructorsData: InstructorType[] =
+  const searchedInstructorsData: InstructorDetailsType[] =
     searchedInstructors?.data?.data?.data;
-  const instructorsData: InstructorType[] = allInstructors?.data?.data?.data;
+  const instructorsData: InstructorDetailsType[] =
+    allInstructors?.data?.data?.data;
 
   useEffect(() => {
     if (debouncedSearch.length > 0) {
@@ -113,9 +114,9 @@ const Instructors = () => {
                   <InstructorCard {...instructor} />
                   <AvatarCustom
                     alt="avatar"
-                    src={'https://i.pravatar.cc/150?img=1'}
-                    fallback={'U'}
-                    className="size-14"
+                    src={instructor.instructorProfile.profilePictureUrl}
+                    fallback={instructor.fname[0].charAt(0)}
+                    className="size-14 text-black"
                   />
                 </div>
               ))
@@ -137,8 +138,8 @@ const Instructors = () => {
 
 export default Instructors;
 
-const InstructorCard = (props: InstructorType) => {
-  const { id, fname, lname, email, about } = props;
+const InstructorCard = (props: InstructorDetailsType) => {
+  const { id, fname, lname, email, instructorProfile } = props;
   const [_, setInstructor] = useQueryState('id');
   const [__, setAddInstructor] = useQueryState('instructorSetup');
   const [deleteInstructor, setDeleteInstructor] = useState(false);
@@ -190,7 +191,7 @@ const InstructorCard = (props: InstructorType) => {
           </div>
         </AccordionTrigger>
         <AccordionContent className="text-xs/[100%] font-medium">
-          {about}
+          {instructorProfile.about}
         </AccordionContent>
       </AccordionItem>
     </>
