@@ -19,13 +19,18 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import TextInput from '@/components/ui/custom/input';
-import { Plus } from 'lucide-react';
 import TextAreaInput from '@/components/ui/custom/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { Input } from '@/components/ui/input';
 import { useRef, useState } from 'react';
+import type { CategoryType, CourseType, InstructorType } from '@/lib/constants';
+import SelectInput from '@/components/ui/custom/select';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { MUTATIONS, QUERIES } from '@/queries';
+import { Skeleton } from '@/components/ui/skeleton';
+import useSendRequest from '@/lib/hooks/useSendRequest';
 
 export const items = [
   {
@@ -83,8 +88,8 @@ export const items = [
 ] as const;
 
 const formSchema = z.object({
-  fullName: z.string().min(2, {
-    message: 'Full Name must be at least 2 characters.',
+  fullName: z.string().min(1, {
+    message: 'Full Name must be at least 1 characters.',
   }),
   courseTitle: z.string().min(2, {
     message: 'Course Title must be at least 2 characters.',
@@ -96,21 +101,60 @@ const formSchema = z.object({
     message: 'You must select exactly one item.',
   }),
   image: z
-    .any()
-    .refine(
-      file =>
-        !file ||
-        (file instanceof File &&
-          file.size <= 10 * 1024 * 1024 &&
-          file.type.startsWith('image/')),
-      { message: 'Please upload an image file not more than 10MB.' },
-    ),
+    .union([
+      z.url('Must be a valid URL'),
+      z
+        .any()
+        .refine(
+          file =>
+            !file ||
+            (file instanceof File &&
+              file.size <= 10 * 1024 * 1024 &&
+              file.type.startsWith('image/')),
+          { message: 'Please upload an image file not more than 10MB.' },
+        ),
+    ])
+    .optional(),
 });
+
+const useGetInstructorsAndCategories = (page?: number, limit?: number) => {
+  return useQueries({
+    queries: [
+      {
+        queryKey: ['instructors', { page, limit }],
+        queryFn: () => QUERIES.getInstructors(page, limit),
+      },
+      {
+        queryKey: ['categories', { page, limit }],
+        queryFn: () => QUERIES.getCategories(),
+      },
+    ],
+  });
+};
 
 const AddNewCourse = () => {
   const [addNewCourse, setAddNewCourse] = useQueryState('addNewCourse');
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const queryClient = useQueryClient();
+
+  const [allInstructors, categories] = useGetInstructorsAndCategories(
+    undefined,
+    20,
+  );
+
+  const areAnyPending = [allInstructors, categories].some(
+    query => query.status === 'pending',
+  );
+
+  const instructorsData: InstructorType[] = allInstructors?.data?.data?.data;
+  const categoriesData: CategoryType[] = categories?.data?.data?.data;
+
+  const instructorsOptions = instructorsData?.map(instructor => ({
+    label: instructor.fname + ' ' + instructor.lname,
+    value: instructor.id,
+  }));
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -119,13 +163,46 @@ const AddNewCourse = () => {
       courseTitle: '',
       courseDescription: '',
       items: [],
+      image: undefined,
+    },
+  });
+
+  console.log(form.watch('items'));
+
+  const { mutate, isPending } = useSendRequest<CourseType, any>({
+    mutationFn: (data: CourseType) => MUTATIONS.course(data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to add course',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Course added successfully',
+    },
+    onSuccessCallback: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['courses'],
+      });
+      form.reset();
+      setAddNewCourse(null);
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+    mutate({
+      instructor: +values.fullName,
+      title: values.courseTitle,
+      description: values.courseDescription,
+      image: values.image,
+      categories: [Number(values.items)],
+    });
+    // console.log(
+    //   +values.fullName,
+    //   values.courseTitle,
+    //   values.courseDescription,
+    //   values.image,
+    //   [Number(values.items)],
+    // );
   }
 
   return (
@@ -147,26 +224,20 @@ const AddNewCourse = () => {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col gap-6 py-6"
           >
-            <fieldset className="relative">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <TextInput
-                    field={field}
-                    placeholder="Instructor’s Full Name"
-                    validated
-                  />
-                )}
-              />
-              <Plus
-                className={cn(
-                  'absolute top-1/2 right-5 -translate-y-1/2',
-                  form.formState.errors.fullName && 'top-[1.4rem]',
-                )}
-                size={16}
-              />
-            </fieldset>
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <SelectInput
+                  field={field}
+                  className="w-full"
+                  placeholder="Select an instructor"
+                  validated
+                  isPending={areAnyPending}
+                  options={instructorsOptions}
+                />
+              )}
+            />
             <FormField
               control={form.control}
               name="courseTitle"
@@ -180,7 +251,7 @@ const AddNewCourse = () => {
               render={({ field }) => (
                 <TextAreaInput
                   field={field}
-                  placeholder="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. "
+                  placeholder="What is this course about?"
                   validated
                 />
               )}
@@ -192,42 +263,59 @@ const AddNewCourse = () => {
                 render={() => (
                   <FormItem>
                     <div className="flex basis-full flex-wrap items-center gap-1.5">
-                      {items.map(item => (
-                        <FormField
-                          key={item.id}
-                          control={form.control}
-                          name="items"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={item.id}
-                                className="flex flex-row items-center"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    className="hidden"
-                                    checked={field.value?.includes(item.id)}
-                                    onCheckedChange={checked => {
-                                      return checked
-                                        ? field.onChange([item.id])
-                                        : field.onChange([]);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  className={cn(
-                                    'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
-                                    field.value?.includes(item.id) &&
-                                      'bg-[#D0EA50] text-black',
-                                  )}
+                      {categories.isError ? (
+                        <span>No categories found!</span>
+                      ) : areAnyPending ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {Array(10)
+                            .fill(null)
+                            .map((_, i) => (
+                              <Skeleton
+                                key={i}
+                                className="h-5 w-16 animate-pulse rounded bg-[#E6EFE6]"
+                              />
+                            ))}
+                        </div>
+                      ) : (
+                        categoriesData.map(item => (
+                          <FormField
+                            key={item.id}
+                            control={form.control}
+                            name="items"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-center"
                                 >
-                                  {item.label}
-                                </FormLabel>
-                              </FormItem>
-                            );
-                          }}
-                        />
-                      ))}
+                                  <FormControl>
+                                    <Checkbox
+                                      className="hidden"
+                                      checked={field.value?.includes(
+                                        `${item.id}`,
+                                      )}
+                                      onCheckedChange={checked => {
+                                        return checked
+                                          ? field.onChange([`${item.id}`])
+                                          : field.onChange([]);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    className={cn(
+                                      'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
+                                      field.value?.includes(`${item.id}`) &&
+                                        'bg-[#D0EA50] text-black',
+                                    )}
+                                  >
+                                    {item.name}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))
+                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -302,7 +390,7 @@ const AddNewCourse = () => {
               />
             </fieldset>
             <Button type="submit" className="self-end">
-              Create New Course
+              {isPending ? 'Creating...' : 'Create New Course'}
             </Button>
           </form>
         </Form>

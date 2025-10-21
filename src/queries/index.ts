@@ -1,4 +1,4 @@
-import type { InstructorType } from '@/lib/constants';
+import type { CourseType, InstructorType } from '@/lib/constants';
 import { https } from '@/lib/https';
 
 const LIMIT = 9;
@@ -30,6 +30,13 @@ export const MUTATIONS = {
   },
   deleteInstructor: async function (id: number) {
     return await https.delete(`/instructor/${id}`);
+  },
+  course: async function (data: CourseType) {
+    return await https.post(`/course`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
 };
 
@@ -70,5 +77,8 @@ export const QUERIES = {
   },
   getInstructor: async function (id: number) {
     return await https.get(`/instructor/${id}`);
+  },
+  getCategories: async function () {
+    return await https.get(`/category`);
   },
 };

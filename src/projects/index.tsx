@@ -15,6 +15,16 @@ import PaginationSection from '@/components/ui/custom/pagination';
 import { useGetCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
 import EmptyState from '@/components/empty';
+// import { useForm } from 'react-hook-form';
+// import { https } from '@/lib/https';
+
+// async function submitName(data: { name: string }) {
+//   return await https.post('/category', data);
+// }
+
+// type FormData = {
+//   name: string;
+// };
 
 const Projects = () => {
   const [page, setPage] = useState(1);
@@ -28,6 +38,19 @@ const Projects = () => {
   const { data, isPending, isError } = useGetCourses(page);
 
   const projectData: ProjectsType[] = data?.data?.data;
+
+  // const { register, handleSubmit, reset } = useForm<FormData>();
+
+  // const { mutate, isSuccess } = useMutation({
+  //   mutationFn: (data: FormData) => submitName(data),
+  //   onSuccess: () => {
+  //     reset(); // clear input on success
+  //   },
+  // });
+
+  // const onSubmit = (formData: FormData) => {
+  //   mutate(formData);
+  // };
 
   return (
     <>
@@ -97,6 +120,33 @@ const Projects = () => {
           </div>
         )}
       </div>
+
+      {/* <div className="mx-auto mt-10 max-w-sm">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-4 rounded-md border p-4"
+        >
+          <label className="text-sm font-medium">Enter your name</label>
+          <input
+            {...register('name', { required: true })}
+            type="text"
+            placeholder="John Doe"
+            className="rounded border p-2"
+          />
+
+          <button
+            type="submit"
+            disabled={isPending}
+            className="rounded bg-blue-600 p-2 text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isPending ? 'Submitting...' : 'Submit'}
+          </button>
+        </form>
+
+        {isSuccess && (
+          <p className="mt-3 text-green-600">{(data as any)?.message}</p>
+        )}
+      </div> */}
     </>
   );
 };

@@ -21,7 +21,11 @@ import InstructorSetupDialog from './instructor-setup-dialog';
 import InstructorDeleteDialog from './delete-dialog';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 
-const useGetInstructors = (page?: number, limit?: number, search?: string) => {
+export const useGetInstructors = (
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
   return useQueries({
     queries: [
       {
@@ -39,10 +43,10 @@ const useGetInstructors = (page?: number, limit?: number, search?: string) => {
 
 const Instructors = () => {
   const [page, setPage] = useState(1);
-  const [_, setAddInstructor] = useQueryState('instructorSetup');
   const [search, setSearch] = useState('');
   const [activeList, setActiveList] = useState<InstructorType[]>([]);
   const debouncedSearch = useDebounce(search.trim(), 1000);
+  const [_, setAddInstructor] = useQueryState('instructorSetup');
   const [allInstructors, searchedInstructors] = useGetInstructors(
     page,
     20,
@@ -56,12 +60,6 @@ const Instructors = () => {
   const searchedInstructorsData: InstructorType[] =
     searchedInstructors?.data?.data?.data;
   const instructorsData: InstructorType[] = allInstructors?.data?.data?.data;
-
-  // useEffect(() => {
-  //   if (debouncedSearch === '') {
-  //     setActiveList(instructorsData);
-  //   }
-  // }, [debouncedSearch, instructorsData]);
 
   useEffect(() => {
     if (debouncedSearch.length > 0) {
