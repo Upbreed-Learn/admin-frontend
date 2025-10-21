@@ -80,9 +80,22 @@ const InstructorSetupDialog = () => {
     image: undefined,
   });
 
+  useEffect(() => {
+    if (addInstructor && !instructor) {
+      setValues({
+        firstName: '',
+        lastName: '',
+        email: '',
+        aboutInstructor: '',
+        image: undefined,
+      });
+    }
+  }, [addInstructor, instructor]);
+
   const handleOpenChange = () => {
     setAddInstructor(addInstructor === 'true' ? null : 'true');
     setInstructor(typeof instructor === 'string' ? null : instructor);
+    setConfirm(false);
   };
 
   return (
@@ -411,7 +424,7 @@ const Confirm = (props: {
     >
       <p className="text-center text-xs/4 font-semibold text-[#9C9C9C]">
         {instructor
-          ? 'Would you like to update this instructor?'
+          ? 'Are you sure you want to update this instructor?'
           : 'Would you like to create an account for this instructor?'}
         <br /> <br />
         <span className={cn('text-[#305B43]')}>“{values.email}”</span>

@@ -53,3 +53,18 @@ export interface InstructorDetailsType {
   deletedAt: string;
   instructorProfile: InstructorProfileType;
 }
+
+export interface CourseType {
+  instructor: number;
+  title: string;
+  description: string;
+  image: File;
+  categories: number[];
+  // status: string;
+  // createdAt: string;
+}
+
+export type CategoryType = {
+  id: string;
+  name: string;
+};

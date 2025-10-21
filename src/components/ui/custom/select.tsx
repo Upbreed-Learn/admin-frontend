@@ -49,7 +49,7 @@ const SelectInput = (props: SelectInputprops) => {
     // children,
     selectClassName,
     contentClassName,
-    // isPending,
+    isPending,
   } = props;
 
   if (!validated) {
@@ -90,34 +90,34 @@ const SelectInput = (props: SelectInputprops) => {
           {label}
         </FormLabel>
       )}
-      {/* {isPending ? (
-        <p className="pt-6 text-lg leading-[100%] text-[#62646C] uppercase">
-          Trying to find reasons...
+      {isPending ? (
+        <p className="pt-6 leading-[100%] text-[#62646C]">
+          Trying to find instructors...
         </p>
       ) : !options || options.length === 0 ? (
-        <p className="pt-6 text-lg leading-[100%] text-[#62646C] uppercase">
-          No Reasons found!
+        <p className="pt-6 leading-[100%] text-[#62646C]">
+          No instructors found!
         </p>
-      ) : ( */}
-      <Select
-        disabled={disabled}
-        onValueChange={field?.onChange}
-        defaultValue={field?.value}
-      >
-        <FormControl>
-          <SelectTrigger className={cn('', className)}>
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent className="">
-          {options?.map(option => (
-            <SelectItem key={option.value} value={option.value} className="">
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {/* )} */}
+      ) : (
+        <Select
+          disabled={disabled}
+          onValueChange={field?.onChange}
+          defaultValue={field?.value}
+        >
+          <FormControl>
+            <SelectTrigger className={cn('border-0 bg-[#D9D9D980]', className)}>
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent className="">
+            {options?.map(option => (
+              <SelectItem key={option.value} value={option.value} className="">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <FormMessage />
     </FormItem>
