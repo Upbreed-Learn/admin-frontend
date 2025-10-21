@@ -35,17 +35,17 @@ export default function TotalRevenueChart(props: {
     >
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-[9.44px]/[100%] font-bold text-[#464255]">
+        <h2 className="text-sm/[100%] font-bold text-[#464255]">
           Total Revenue
         </h2>
         <div className="flex gap-1.5">
           <div className="flex items-center gap-1">
             <div className="h-[7px] w-[7px] rounded-full bg-[#00230F]"></div>
-            <span className="text-[5.5px] text-gray-500">USD</span>
+            <span className="text-xs text-gray-500">USD</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-[7px] w-[7px] rounded-full bg-[#34A853]"></div>
-            <span className="text-[5.5px] text-gray-500">NAIRA</span>
+            <span className="text-xs text-gray-500">NAIRA</span>
           </div>
         </div>
       </div>

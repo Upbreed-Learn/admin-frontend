@@ -26,7 +26,30 @@ export interface InstructorType {
   fname: string;
   lname: string;
   email: string;
-  description: string;
-  image: string;
+  about: string;
+  profilePicture: File;
   createdAt: string;
+}
+
+type InstructorProfileType = {
+  id: string;
+  linkedInUrl: string;
+  about: string;
+  description: string;
+  profilePictureUrl: string;
+  expertise: string;
+  title: string;
+};
+export interface InstructorDetailsType {
+  id: string;
+  fname: string;
+  lname: string;
+  phone: string;
+  email: string;
+  password_hash: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
+  instructorProfile: InstructorProfileType;
 }

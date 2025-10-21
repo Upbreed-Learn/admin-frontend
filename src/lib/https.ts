@@ -20,8 +20,6 @@ axiosInstance.interceptors.request.use(async config => {
   config.headers!['Authorization'] = 'Bearer ' + token;
   axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + token;
 
-  // Debug logging for requests
-
   return config;
 });
 
