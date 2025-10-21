@@ -59,12 +59,26 @@ export interface CourseType {
   title: string;
   description: string;
   image: File;
+  isActive: boolean;
   categories: number[];
-  // status: string;
-  // createdAt: string;
 }
 
 export type CategoryType = {
   id: string;
   name: string;
+};
+
+export type CourseDetailsType = {
+  id: string;
+  thumbnail: string;
+  title: string;
+  instructor: {
+    fname: string;
+    lname: string;
+  };
+  preview: {
+    lessonCount: number;
+    durationInMinutes: number;
+  };
+  video: [];
 };

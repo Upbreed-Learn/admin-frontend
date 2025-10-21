@@ -1,9 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useParams } from 'react-router';
 import AddNewCourse, { items } from '../add-new-course';
 import { cn } from '@/lib/utils';
-import { useRef, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,21 +27,38 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { DraggableSections } from './draggable';
+import { QUERIES } from '@/queries';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CourseDetailsType } from '@/lib/constants';
+import { Skeleton } from '@/components/ui/skeleton';
+import ErrorState from '@/components/error';
+import EditingWarningDialog from './editing-warning';
 
 const UpdateProject = () => {
+  const [isEdited, setIsEdited] = useState(false);
+
   return (
     <>
       <AddNewCourse />
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-12">
           {/* Add Warning modal if form is edited */}
-          <Button asChild className="w-max">
-            <Link to={'/projects'}>
-              <ArrowLeft />
-              Back
-            </Link>
-          </Button>
-          <InstructorDetails />
+          {isEdited ? (
+            <EditingWarningDialog>
+              <Button className="w-max">
+                <ArrowLeft />
+                Back
+              </Button>
+            </EditingWarningDialog>
+          ) : (
+            <Button asChild className="w-max">
+              <Link to={'/projects'}>
+                <ArrowLeft />
+                Back
+              </Link>
+            </Button>
+          )}
+          <InstructorDetails setIsEdited={setIsEdited} />
         </div>
       </div>
     </>
@@ -43,6 +66,14 @@ const UpdateProject = () => {
 };
 
 export default UpdateProject;
+
+const useGetCourse = (id: string) => {
+  return useQuery({
+    queryKey: ['course', { id }],
+    queryFn: () => QUERIES.getCourse(+id),
+    enabled: !!id,
+  });
+};
 
 const sectionSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
@@ -79,23 +110,53 @@ const formSchema = z.object({
     .min(1, { message: 'At least one section is required' }),
 });
 
-const InstructorDetails = () => {
+const InstructorDetails = (props: {
+  setIsEdited: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const { setIsEdited } = props;
+  const { id } = useParams();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  const { data, isPending, isError } = useGetCourse(id!!);
+
+  const courseData: CourseDetailsType = data?.data?.data;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: 'MICHELLE ELEGBE',
-      courseTitle: 'BUSINESS DEVELOPMENT',
-      courseDescription: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,
+      fullName:
+        courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
+      courseTitle: courseData?.title,
+      courseDescription: courseData?.title,
       items: ['government'],
-      image: 'https://i.pravatar.cc/150?img=1',
+      image: courseData?.thumbnail,
       sections: [
         { title: '', description: '', video: undefined, isPublic: false },
       ],
     },
   });
+
+  useEffect(() => {
+    if (courseData) {
+      form.reset({
+        fullName:
+          courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
+        courseTitle: courseData?.title,
+        courseDescription: courseData?.title,
+        items: ['government'],
+        image: courseData?.thumbnail,
+        sections: [
+          { title: '', description: '', video: undefined, isPublic: false },
+        ],
+      });
+    }
+  }, [form, courseData]);
+
+  useEffect(() => {
+    setIsEdited(form.formState.isDirty);
+  }, [form.formState.isDirty]);
 
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
@@ -114,6 +175,18 @@ const InstructorDetails = () => {
   // const handleDeleteSection = (index: number) => {
   //   remove(index);
   // };
+
+  if (isPending) {
+    return <ProjectDetailsFormSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ['course'] })}
+      />
+    );
+  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
@@ -311,5 +384,82 @@ const InstructorDetails = () => {
         </div>
       </form>
     </Form>
+  );
+};
+
+const ProjectDetailsFormSkeleton = () => {
+  return (
+    <div
+      role="status"
+      aria-label="loading project form"
+      className="flex flex-col gap-7"
+    >
+      <div className="flex flex-col gap-2 rounded-lg bg-[#A1A1A10F] px-7 py-12">
+        <div className="flex gap-4 border-b border-[#0000001A] pb-3">
+          <div className="flex flex-3/4 flex-col gap-4">
+            {/* Course title */}
+            <Skeleton className="ml-auto h-6 w-3/4 animate-pulse rounded bg-[#E6EFE6]" />
+
+            {/* Full name */}
+            <Skeleton className="ml-auto h-6 w-2/3 animate-pulse rounded bg-[#E6EFE6]" />
+
+            {/* Description */}
+            <Skeleton className="h-24 w-full animate-pulse rounded bg-[#E6EFE6]" />
+
+            {/* Items chips */}
+            <div className="flex flex-wrap justify-end gap-2">
+              {Array(4)
+                .fill(null)
+                .map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-6 w-20 animate-pulse rounded bg-[#E6EFE6]"
+                  />
+                ))}
+            </div>
+          </div>
+
+          {/* Image box on the right */}
+          <div className="flex-1/4">
+            <Skeleton className="h-[18.1875rem] w-full animate-pulse rounded-[10px] bg-[#E6EFE6]" />
+          </div>
+        </div>
+
+        {/* Sections skeletons */}
+        <div className="mt-6 space-y-4">
+          {Array(2)
+            .fill(null)
+            .map((_, si) => (
+              <div
+                key={si}
+                className="flex items-start justify-between gap-4 rounded-lg bg-white/5 p-4"
+              >
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-1/2 animate-pulse rounded bg-[#E6EFE6]" />
+                  <Skeleton className="h-16 w-full animate-pulse rounded bg-[#E6EFE6]" />
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <Skeleton className="h-8 w-10 animate-pulse rounded bg-[#E6EFE6]" />
+                  <Skeleton className="h-8 w-8 animate-pulse rounded bg-[#E6EFE6]" />
+                </div>
+              </div>
+            ))}
+        </div>
+
+        {/* Add New button skeleton */}
+        <div className="mt-4 w-max">
+          <Skeleton className="h-6 w-20 animate-pulse rounded bg-[#E6EFE6]" />
+        </div>
+      </div>
+
+      {/* Bottom actions */}
+      <div className="flex justify-between">
+        <Skeleton className="h-5 w-28 animate-pulse rounded bg-[#E6EFE6]" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-24 animate-pulse rounded bg-[#E6EFE6]" />
+          <Skeleton className="h-10 w-24 animate-pulse rounded bg-[#E6EFE6]" />
+        </div>
+      </div>
+    </div>
   );
 };
