@@ -1,4 +1,4 @@
-import { useEffect, type ComponentProps } from 'react';
+import { useEffect, type ChangeEvent, type ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import type { ControllerRenderProps } from 'react-hook-form';
 import { Label } from '../label';
@@ -77,11 +77,21 @@ const TextInput = (props: TextInputProps) => {
 
 export default TextInput;
 
-export const SearchInput = (props: { className?: string }) => {
-  const { className } = props;
+export const SearchInput = (props: {
+  className?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
+}) => {
+  const { className, onChange, value } = props;
   return (
     <div className={cn('relative w-full max-w-[27.875rem]', className)}>
-      <Input type="search" placeholder="Search" className="pl-9" />
+      <Input
+        type="search"
+        placeholder="Search"
+        className="pl-9"
+        value={value}
+        onChange={onChange}
+      />
       <Search className="absolute top-1/2 left-3 -translate-y-1/2" size={16} />
     </div>
   );
