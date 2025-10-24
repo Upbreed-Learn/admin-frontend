@@ -33,8 +33,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
 import EditingWarningDialog from './editing-warning';
 import { useGetCategories, useGetCourse } from '@/queries/hooks';
-import DeleteDialog from '@/components/delete-dialog';
 import { MUTATIONS } from '@/queries';
+import DeleteDialog from '@/components/delete-dialog';
 
 const UpdateProject = () => {
   const [isEdited, setIsEdited] = useState(false);
@@ -44,7 +44,6 @@ const UpdateProject = () => {
       <AddNewCourse />
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-12">
-          {/* Add Warning modal if form is edited */}
           {isEdited ? (
             <EditingWarningDialog>
               <Button className="w-max">
@@ -178,10 +177,6 @@ const InstructorDetails = (props: {
       isPublic: false,
     });
   };
-
-  // const handleDeleteSection = (index: number) => {
-  //   remove(index);
-  // };
 
   if (isPending) {
     return <ProjectDetailsFormSkeleton />;

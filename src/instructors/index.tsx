@@ -154,25 +154,6 @@ const InstructorCard = (props: InstructorDetailsType) => {
     setDeleteInstructor(true);
   };
 
-  // const { mutate, isPending } = useSendRequest<{ id: number }, any>({
-  //   mutationFn: (data: { id: number }) => MUTATIONS.deleteInstructor(data.id),
-  //   errorToast: {
-  //     title: 'Error',
-  //     description: 'Failed to delete instructor',
-  //   },
-  //   successToast: {
-  //     title: 'Success',
-  //     description: 'Instructor deleted successfully',
-  //   },
-  //   onSuccessCallback: () => {
-  //     queryClient.invalidateQueries({
-  //       queryKey: ['instructors'],
-  //     });
-  //     setInstructor(null);
-  //     setDeleteInstructor(false);
-  //   },
-  // });
-
   return (
     <>
       <DeleteDialog
