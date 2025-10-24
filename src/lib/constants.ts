@@ -87,5 +87,29 @@ export type CourseDetailsType = {
     lessonCount: number;
     durationInMinutes: number;
   };
-  video: [];
+  videos: {
+    id: number;
+    title: string;
+    description: string;
+    bunnyVideoId: string;
+    isTrailer: boolean;
+    isPublic: boolean;
+  }[];
+};
+
+export type EditCourseType = {
+  title: string;
+  description: string;
+  thumbnail: File;
+  categories: {
+    id: number;
+    name: string;
+  }[];
+  videos: {
+    title: string;
+    description: string;
+    bunnyVideoId: string;
+    isTrailer: boolean;
+    isPublic: boolean;
+  }[];
 };

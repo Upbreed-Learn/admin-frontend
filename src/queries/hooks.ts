@@ -24,9 +24,8 @@ export const useGetCategories = (page?: number, limit?: number) => {
 
 export const useGetCourse = (id: string) => {
   return useQuery({
-    queryKey: ['course', { id }],
+    queryKey: ['courses', { id }],
     queryFn: () => QUERIES.getCourse(+id),
     enabled: !!id,
   });
 };
-
