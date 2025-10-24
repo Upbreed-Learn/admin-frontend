@@ -12,8 +12,62 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryState } from 'nuqs';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
-import { items } from './add-new-course';
 import { Button } from '@/components/ui/button';
+
+export const items = [
+  {
+    id: 'food',
+    label: 'Food',
+  },
+  {
+    id: 'art & culture',
+    label: 'Art & Culture',
+  },
+  {
+    id: 'government',
+    label: 'Government',
+  },
+  {
+    id: 'photography',
+    label: 'Photography',
+  },
+  {
+    id: 'illustration',
+    label: 'Illustration',
+  },
+  {
+    id: 'film',
+    label: 'Film',
+  },
+  {
+    id: 'writing',
+    label: 'Writing',
+  },
+  {
+    id: 'design',
+    label: 'Design',
+  },
+  {
+    id: 'marketing',
+    label: 'Marketing',
+  },
+  {
+    id: '3d',
+    label: '3D',
+  },
+  {
+    id: 'architecture',
+    label: 'Architecture',
+  },
+  {
+    id: 'music',
+    label: 'Music',
+  },
+  {
+    id: 'audio',
+    label: 'Audio',
+  },
+] as const;
 
 const FormSchema = z.object({
   duration: z.string().min(1, { message: 'Duration is required' }),

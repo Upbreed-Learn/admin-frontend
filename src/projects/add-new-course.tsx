@@ -27,65 +27,11 @@ import { Input } from '@/components/ui/input';
 import { useRef, useState } from 'react';
 import type { CategoryType, CourseType, InstructorType } from '@/lib/constants';
 import SelectInput from '@/components/ui/custom/select';
-import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { MUTATIONS, QUERIES } from '@/queries';
+import { useQueryClient } from '@tanstack/react-query';
+import { MUTATIONS } from '@/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import useSendRequest from '@/lib/hooks/useSendRequest';
-
-export const items = [
-  {
-    id: 'food',
-    label: 'Food',
-  },
-  {
-    id: 'art & culture',
-    label: 'Art & Culture',
-  },
-  {
-    id: 'government',
-    label: 'Government',
-  },
-  {
-    id: 'photography',
-    label: 'Photography',
-  },
-  {
-    id: 'illustration',
-    label: 'Illustration',
-  },
-  {
-    id: 'film',
-    label: 'Film',
-  },
-  {
-    id: 'writing',
-    label: 'Writing',
-  },
-  {
-    id: 'design',
-    label: 'Design',
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing',
-  },
-  {
-    id: '3d',
-    label: '3D',
-  },
-  {
-    id: 'architecture',
-    label: 'Architecture',
-  },
-  {
-    id: 'music',
-    label: 'Music',
-  },
-  {
-    id: 'audio',
-    label: 'Audio',
-  },
-] as const;
+import { useGetCategories, useGetInstructors } from '@/queries/hooks';
 
 const formSchema = z.object({
   fullName: z.string().min(1, {
@@ -117,21 +63,6 @@ const formSchema = z.object({
     .optional(),
 });
 
-const useGetInstructorsAndCategories = (page?: number, limit?: number) => {
-  return useQueries({
-    queries: [
-      {
-        queryKey: ['instructors', { page, limit }],
-        queryFn: () => QUERIES.getInstructors(page, limit),
-      },
-      {
-        queryKey: ['categories', { page, limit }],
-        queryFn: () => QUERIES.getCategories(),
-      },
-    ],
-  });
-};
-
 const AddNewCourse = () => {
   const [addNewCourse, setAddNewCourse] = useQueryState('addNewCourse');
   const [isDragging, setIsDragging] = useState(false);
@@ -139,17 +70,26 @@ const AddNewCourse = () => {
 
   const queryClient = useQueryClient();
 
-  const [allInstructors, categories] = useGetInstructorsAndCategories(
-    undefined,
-    20,
-  );
+  const { data: allInstructors, isPending: allInstructorsIsPending } =
+    useGetInstructors(undefined, 20);
 
-  const areAnyPending = [allInstructors, categories].some(
-    query => query.status === 'pending',
-  );
+  const {
+    data: categories,
+    isPending: categoriesIsPending,
+    isError,
+  } = useGetCategories(undefined, 20);
 
-  const instructorsData: InstructorType[] = allInstructors?.data?.data?.data;
-  const categoriesData: CategoryType[] = categories?.data?.data?.data;
+  // const [allInstructors, categories] = useGetInstructorsAndCategories(
+  //   undefined,
+  //   20,
+  // );
+
+  // const areAnyPending = [allInstructors, categories].some(
+  //   query => query.status === 'pending',
+  // );
+
+  const instructorsData: InstructorType[] = allInstructors?.data?.data;
+  const categoriesData: CategoryType[] = categories?.data?.data;
 
   const instructorsOptions = instructorsData?.map(instructor => ({
     label: instructor.fname + ' ' + instructor.lname,
@@ -225,7 +165,7 @@ const AddNewCourse = () => {
                   className="w-full"
                   placeholder="Select an instructor"
                   validated
-                  isPending={areAnyPending}
+                  isPending={allInstructorsIsPending}
                   options={instructorsOptions}
                 />
               )}
@@ -255,9 +195,9 @@ const AddNewCourse = () => {
                 render={() => (
                   <FormItem>
                     <div className="flex basis-full flex-wrap items-center gap-1.5">
-                      {categories.isError ? (
+                      {isError ? (
                         <span>No categories found!</span>
-                      ) : areAnyPending ? (
+                      ) : categoriesIsPending ? (
                         <div className="flex flex-wrap gap-1.5">
                           {Array(10)
                             .fill(null)

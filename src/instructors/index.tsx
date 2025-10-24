@@ -10,7 +10,7 @@ import { SearchInput } from '@/components/ui/custom/input';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 import { useQueries } from '@tanstack/react-query';
-import { QUERIES } from '@/queries';
+import { MUTATIONS, QUERIES } from '@/queries';
 import type { InstructorDetailsType } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
@@ -18,8 +18,8 @@ import PaginationSection from '@/components/ui/custom/pagination';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import EmptyState from '@/components/empty';
 import InstructorSetupDialog from './instructor-setup-dialog';
-import InstructorDeleteDialog from './delete-dialog';
 import { useDebounce } from '@/lib/hooks/useDebounce';
+import DeleteDialog from '@/components/delete-dialog';
 
 export const useGetInstructors = (
   page?: number,
@@ -156,9 +156,16 @@ const InstructorCard = (props: InstructorDetailsType) => {
 
   return (
     <>
-      <InstructorDeleteDialog
+      <DeleteDialog
         setDelete={setDeleteInstructor}
         delete={deleteInstructor}
+        whatToDelete="instructor"
+        id={+id}
+        onSuccessCallback={() => {
+          setInstructor(null);
+        }}
+        queryKey={'instructors'}
+        deleteFn={() => MUTATIONS.deleteInstructor(+id)}
       />
       <AccordionItem
         value={`item-${id}`}
