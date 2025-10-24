@@ -38,6 +38,9 @@ export const MUTATIONS = {
       },
     });
   },
+  deleteProject: async function (id: number) {
+    return await https.delete(`/course/${id}`);
+  },
 };
 
 export const QUERIES = {
@@ -84,8 +87,17 @@ export const QUERIES = {
   getInstructor: async function (id: number) {
     return await https.get(`/instructor/${id}`);
   },
-  getCategories: async function () {
-    return await https.get(`/category`);
+  getCategories: async function (page?: number, limit?: number) {
+    limit = limit || LIMIT;
+    const params = new URLSearchParams();
+
+    if (page) params.append('page', `${page}`);
+    if (limit) params.append('limit', `${limit}`);
+
+    const queryString = params.toString();
+    const url = `/category?${queryString}`;
+
+    return await https.get(url);
   },
   getCourse: async function (id: number) {
     return await https.get(`/course/${id}`);

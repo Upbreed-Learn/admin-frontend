@@ -7,3 +7,26 @@ export const useGetCourses = (page?: number, limit?: number) => {
     queryFn: () => QUERIES.getCourses(page, limit),
   });
 };
+
+export const useGetInstructors = (page?: number, limit?: number) => {
+  return useQuery({
+    queryKey: ['instructors', { page, limit }],
+    queryFn: () => QUERIES.getInstructors(page, limit),
+  });
+};
+
+export const useGetCategories = (page?: number, limit?: number) => {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: () => QUERIES.getCategories(page, limit),
+  });
+};
+
+export const useGetCourse = (id: string) => {
+  return useQuery({
+    queryKey: ['course', { id }],
+    queryFn: () => QUERIES.getCourse(+id),
+    enabled: !!id,
+  });
+};
+

@@ -207,15 +207,15 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
             className="border-b border-[#FFFFFF4D] pb-1.5"
           >
             <span className="absolute inset-0"></span>
-            <p className="text-xs font-extrabold text-white">
+            <p className="text-sm font-extrabold text-white">
               {details.details.title}
             </p>
           </Link>
           <div className="flex flex-col gap-1">
-            <p className="text-[7.18px] text-white">
+            <p className="text-sm text-white">
               {details.details.preview.durationInMinutes}
             </p>
-            <p className="text-[7.18px] font-semibold text-white">
+            <p className="text-sm font-semibold text-white">
               {details.details.preview.lessonCount} Lesson
               {details.details.preview.lessonCount > 1 && `s`}
             </p>
@@ -228,8 +228,8 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
           className="size-14"
         />
       </div>
-      <p className="w-max rounded-md bg-[#D0EA50] px-2 py-0.5 text-[6px] font-semibold">
-        {details.details.title}
+      <p className="w-max rounded-md bg-[#D0EA50] px-2 py-0.5 text-xs font-semibold">
+        {details.details.categories[0].name}
       </p>
     </div>
   );

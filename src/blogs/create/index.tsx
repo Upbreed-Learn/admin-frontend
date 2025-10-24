@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
-import { items } from '@/projects/add-new-course';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft } from 'lucide-react';
 import { useState, type Dispatch, type SetStateAction } from 'react';
@@ -26,6 +25,7 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router';
 import z from 'zod';
 import Tiptap from './text-editor';
+import { items } from '@/projects/filter';
 
 const formSchema = z.object({
   title: z.string().min(2, {

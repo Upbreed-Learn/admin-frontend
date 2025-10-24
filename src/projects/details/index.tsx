@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { Link, useParams } from 'react-router';
-import AddNewCourse, { items } from '../add-new-course';
+import { Link, useNavigate, useParams } from 'react-router';
+import AddNewCourse from '../add-new-course';
 import { cn } from '@/lib/utils';
 import {
   useEffect,
@@ -27,12 +27,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { DraggableSections } from './draggable';
-import { QUERIES } from '@/queries';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CourseDetailsType } from '@/lib/constants';
+import { useQueryClient } from '@tanstack/react-query';
+import type { CategoryType, CourseDetailsType } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
 import EditingWarningDialog from './editing-warning';
+import { useGetCategories, useGetCourse } from '@/queries/hooks';
+import DeleteDialog from '@/components/delete-dialog';
+import { MUTATIONS } from '@/queries';
 
 const UpdateProject = () => {
   const [isEdited, setIsEdited] = useState(false);
@@ -67,14 +69,6 @@ const UpdateProject = () => {
 
 export default UpdateProject;
 
-const useGetCourse = (id: string) => {
-  return useQuery({
-    queryKey: ['course', { id }],
-    queryFn: () => QUERIES.getCourse(+id),
-    enabled: !!id,
-  });
-};
-
 const sectionSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
@@ -96,15 +90,20 @@ const formSchema = z.object({
     message: 'You must select exactly one item.',
   }),
   image: z
-    .any()
-    .refine(
-      file =>
-        !file ||
-        (file instanceof File &&
-          file.size <= 10 * 1024 * 1024 &&
-          file.type.startsWith('image/')),
-      { message: 'Please upload an image file not more than 10MB.' },
-    ),
+    .union([
+      z.url('Must be a valid URL'),
+      z
+        .any()
+        .refine(
+          file =>
+            !file ||
+            (file instanceof File &&
+              file.size <= 10 * 1024 * 1024 &&
+              file.type.startsWith('image/')),
+          { message: 'Please upload an image file not more than 10MB.' },
+        ),
+    ])
+    .optional(),
   sections: z
     .array(sectionSchema)
     .min(1, { message: 'At least one section is required' }),
@@ -113,15 +112,23 @@ const formSchema = z.object({
 const InstructorDetails = (props: {
   setIsEdited: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const [deleteProject, setDeleteProject] = useState(false);
   const { setIsEdited } = props;
   const { id } = useParams();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isPending, isError } = useGetCourse(id!!);
+  const {
+    data: categories,
+    isPending: isCategoriesPending,
+    isError: isCategoriesError,
+  } = useGetCategories(undefined, 20);
 
   const courseData: CourseDetailsType = data?.data?.data;
+  const categoriesData: CategoryType[] = categories?.data?.data;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -129,8 +136,8 @@ const InstructorDetails = (props: {
       fullName:
         courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
       courseTitle: courseData?.title,
-      courseDescription: courseData?.title,
-      items: ['government'],
+      courseDescription: courseData?.description,
+      items: courseData?.categories.map(category => `${category.id}`),
       image: courseData?.thumbnail,
       sections: [
         { title: '', description: '', video: undefined, isPublic: false },
@@ -144,8 +151,8 @@ const InstructorDetails = (props: {
         fullName:
           courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
         courseTitle: courseData?.title,
-        courseDescription: courseData?.title,
-        items: ['government'],
+        courseDescription: courseData?.description,
+        items: courseData?.categories.map(category => `${category.id}`),
         image: courseData?.thumbnail,
         sections: [
           { title: '', description: '', video: undefined, isPublic: false },
@@ -195,137 +202,149 @@ const InstructorDetails = (props: {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-7"
-      >
-        <fieldset className="flex flex-col gap-2 rounded-lg bg-[#A1A1A10F] px-7 py-12">
-          <fieldset className="flex gap-4 border-b border-[#0000001A] pb-3">
-            <fieldset className="flex flex-3/4 flex-col gap-4">
-              <FormField
-                control={form.control}
-                name="courseTitle"
-                render={({ field }) => (
-                  <TextInput
-                    field={field}
-                    placeholder="Course Title"
-                    validated
-                  />
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <TextInput
-                    field={field}
-                    disabled
-                    placeholder="Instructor’s Full Name"
-                    validated
-                  />
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="courseDescription"
-                render={({ field }) => (
-                  <TextAreaInput
-                    field={field}
-                    placeholder="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. "
-                    validated
-                  />
-                )}
-              />
-              <fieldset className="flex items-start gap-7">
+    <>
+      <DeleteDialog
+        delete={deleteProject}
+        setDelete={setDeleteProject}
+        whatToDelete="project"
+        id={+id!!}
+        onSuccessCallback={() => {
+          navigate('/projects');
+        }}
+        queryKey={'courses'}
+        deleteFn={() => MUTATIONS.deleteProject(+id!!)}
+      />
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-7"
+        >
+          <fieldset className="flex flex-col gap-2 rounded-lg bg-[#A1A1A10F] px-7 py-12">
+            <fieldset className="flex gap-4 border-b border-[#0000001A] pb-3">
+              <fieldset className="flex flex-3/4 flex-col gap-4">
                 <FormField
                   control={form.control}
-                  name="items"
-                  render={() => (
-                    <FormItem>
-                      <div className="flex basis-full flex-wrap items-center gap-1.5">
-                        {items.map(item => (
-                          <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="items"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={item.id}
-                                  className="flex flex-row items-center"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      className="hidden"
-                                      checked={field.value?.includes(item.id)}
-                                      onCheckedChange={checked => {
-                                        return checked
-                                          ? field.onChange([item.id])
-                                          : field.onChange([]);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel
-                                    className={cn(
-                                      'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
-                                      field.value?.includes(item.id) &&
-                                        'bg-[#D0EA50] text-black',
-                                    )}
-                                  >
-                                    {item.label}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
+                  name="courseTitle"
+                  render={({ field }) => (
+                    <TextInput
+                      field={field}
+                      placeholder="Course Title"
+                      validated
+                    />
                   )}
                 />
-              </fieldset>
-            </fieldset>
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field: { value, onChange } }) => (
-                <FormItem className="flex-1/4">
-                  <div
-                    className={cn(
-                      'flex h-[18.1875rem] basis-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[10px] bg-[#D9D9D9]',
-                      isDragging && 'border-[#305B43] bg-[#e5e5e5]',
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <TextInput
+                      field={field}
+                      disabled
+                      placeholder="Instructor’s Full Name"
+                      validated
+                    />
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="courseDescription"
+                  render={({ field }) => (
+                    <TextAreaInput
+                      field={field}
+                      placeholder="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. "
+                      validated
+                    />
+                  )}
+                />
+                <fieldset className="flex items-start gap-7">
+                  <FormField
+                    control={form.control}
+                    name="items"
+                    render={() => (
+                      <FormItem>
+                        <div className="flex basis-full flex-wrap items-center gap-1.5">
+                          {isCategoriesError ? (
+                            <span>No categories found!</span>
+                          ) : isCategoriesPending ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {Array(10)
+                                .fill(null)
+                                .map((_, i) => (
+                                  <Skeleton
+                                    key={i}
+                                    className="h-5 w-16 animate-pulse rounded bg-[#E6EFE6]"
+                                  />
+                                ))}
+                            </div>
+                          ) : (
+                            categoriesData.map(item => (
+                              <FormField
+                                key={item.id}
+                                control={form.control}
+                                name="items"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={item.id}
+                                      className="flex flex-row items-center"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          className="hidden"
+                                          checked={field.value?.includes(
+                                            `${item.id}`,
+                                          )}
+                                          onCheckedChange={checked => {
+                                            return checked
+                                              ? field.onChange([`${item.id}`])
+                                              : field.onChange([]);
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel
+                                        className={cn(
+                                          'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
+                                          field.value?.includes(`${item.id}`) &&
+                                            'bg-[#D0EA50] text-black',
+                                        )}
+                                      >
+                                        {item.name}
+                                      </FormLabel>
+                                    </FormItem>
+                                  );
+                                }}
+                              />
+                            ))
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    onDragOver={e => {
-                      e.preventDefault();
-                      setIsDragging(true);
-                    }}
-                    onDragLeave={e => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                    }}
-                    onDrop={e => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      const file = e.dataTransfer.files[0];
-                      if (
-                        file &&
-                        file.type.startsWith('image/') &&
-                        file.size <= 10 * 1024 * 1024
-                      ) {
-                        onChange(file);
-                      }
-                    }}
-                    onClick={() => inputRef.current?.click()}
-                  >
-                    <Input
-                      ref={inputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={e => {
-                        const file = e.target.files?.[0];
+                  />
+                </fieldset>
+              </fieldset>
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field: { value, onChange } }) => (
+                  <FormItem className="flex-1/4">
+                    <div
+                      className={cn(
+                        'flex h-[18.1875rem] basis-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[10px] bg-[#D9D9D9]',
+                        isDragging && 'border-[#305B43] bg-[#e5e5e5]',
+                      )}
+                      onDragOver={e => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                      }}
+                      onDragLeave={e => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                      }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const file = e.dataTransfer.files[0];
                         if (
                           file &&
                           file.type.startsWith('image/') &&
@@ -334,56 +353,75 @@ const InstructorDetails = (props: {
                           onChange(file);
                         }
                       }}
-                    />
-                    {value ? (
-                      <img
-                        src={
-                          typeof value === 'string'
-                            ? value
-                            : URL.createObjectURL(value)
-                        }
-                        alt="uploaded"
-                        className="size-full rounded object-cover"
+                      onClick={() => inputRef.current?.click()}
+                    >
+                      <Input
+                        ref={inputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (
+                            file &&
+                            file.type.startsWith('image/') &&
+                            file.size <= 10 * 1024 * 1024
+                          ) {
+                            onChange(file);
+                          }
+                        }}
                       />
-                    ) : (
-                      <>
-                        <ImageUploadIcon />
-                        <p className="text-[7px]/[100%] font-semibold text-[#9B9B9B]">
-                          UPLOAD IMAGE
-                        </p>
-                      </>
-                    )}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+                      {value ? (
+                        <img
+                          src={
+                            typeof value === 'string'
+                              ? value
+                              : URL.createObjectURL(value)
+                          }
+                          alt="uploaded"
+                          className="size-full rounded object-cover"
+                        />
+                      ) : (
+                        <>
+                          <ImageUploadIcon />
+                          <p className="text-[7px]/[100%] font-semibold text-[#9B9B9B]">
+                            UPLOAD IMAGE
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </fieldset>
+            <DraggableSections
+              form={form}
+              fields={fields}
+              move={move}
+              remove={remove}
             />
+            <button
+              type="button"
+              onClick={handleAddSection}
+              className="w-max text-[10px]/[100%] font-bold text-[#6F6F6F]"
+            >
+              Add New
+            </button>
           </fieldset>
-          <DraggableSections
-            form={form}
-            fields={fields}
-            move={move}
-            remove={remove}
-          />
-          <button
-            type="button"
-            onClick={handleAddSection}
-            className="w-max text-[10px]/[100%] font-bold text-[#6F6F6F]"
-          >
-            Add New
-          </button>
-        </fieldset>
-        <div className="flex justify-between">
-          <button
-            type="button"
-            className="text-[10px]/[100%] font-bold text-[#6F6F6F] underline"
-          >
-            DELETE COURSE
-          </button>
-          <Button>Update</Button>
-        </div>
-      </form>
-    </Form>
+          <div className="flex justify-between">
+            <button
+              onClick={() => setDeleteProject(true)}
+              type="button"
+              className="cursor-pointer text-[10px]/[100%] font-bold text-[#6F6F6F] underline"
+            >
+              DELETE COURSE
+            </button>
+            <Button>Update</Button>
+          </div>
+        </form>
+      </Form>
+    </>
   );
 };
 
