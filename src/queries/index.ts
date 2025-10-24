@@ -1,4 +1,8 @@
-import type { CourseType, InstructorType } from '@/lib/constants';
+import type {
+  CourseType,
+  EditCourseType,
+  InstructorType,
+} from '@/lib/constants';
 import { https } from '@/lib/https';
 
 const LIMIT = 9;
@@ -40,6 +44,9 @@ export const MUTATIONS = {
   },
   deleteProject: async function (id: number) {
     return await https.delete(`/course/${id}`);
+  },
+  editProject: async function (id: number, data: EditCourseType) {
+    return await https.patch(`/course/${id}`, data);
   },
 };
 

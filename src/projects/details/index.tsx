@@ -28,13 +28,18 @@ import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { DraggableSections } from './draggable';
 import { useQueryClient } from '@tanstack/react-query';
-import type { CategoryType, CourseDetailsType } from '@/lib/constants';
+import type {
+  CategoryType,
+  CourseDetailsType,
+  EditCourseType,
+} from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
 import EditingWarningDialog from './editing-warning';
 import { useGetCategories, useGetCourse } from '@/queries/hooks';
 import { MUTATIONS } from '@/queries';
 import DeleteDialog from '@/components/delete-dialog';
+import useSendRequest from '@/lib/hooks/useSendRequest';
 
 const UpdateProject = () => {
   const [isEdited, setIsEdited] = useState(false);
@@ -68,14 +73,16 @@ const UpdateProject = () => {
 
 export default UpdateProject;
 
-const sectionSchema = z.object({
+const videoSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
-  video: z.union([z.instanceof(File), z.url(), z.undefined()]).optional(),
+  bunnyVideoId: z.string().min(1, { message: 'Video ID is required' }),
+  isTrailer: z.boolean(),
+  // video: z.union([z.instanceof(File), z.url(), z.undefined()]).optional(),
   isPublic: z.boolean(),
 });
 
-const formSchema = z.object({
+export const FormSchema = z.object({
   fullName: z.string().min(2, {
     message: 'Full Name must be at least 2 characters.',
   }),
@@ -103,8 +110,8 @@ const formSchema = z.object({
         ),
     ])
     .optional(),
-  sections: z
-    .array(sectionSchema)
+  videos: z
+    .array(videoSchema)
     .min(1, { message: 'At least one section is required' }),
 });
 
@@ -129,8 +136,8 @@ const InstructorDetails = (props: {
   const courseData: CourseDetailsType = data?.data?.data;
   const categoriesData: CategoryType[] = categories?.data?.data;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
     defaultValues: {
       fullName:
         courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
@@ -138,9 +145,25 @@ const InstructorDetails = (props: {
       courseDescription: courseData?.description,
       items: courseData?.categories.map(category => `${category.id}`),
       image: courseData?.thumbnail,
-      sections: [
-        { title: '', description: '', video: undefined, isPublic: false },
-      ],
+      videos:
+        courseData?.videos.length > 0
+          ? courseData?.videos
+          : [
+              {
+                title: '',
+                description: '',
+                bunnyVideoId: '',
+                isTrailer: true,
+                isPublic: true,
+              },
+              {
+                title: '',
+                description: '',
+                bunnyVideoId: '',
+                isTrailer: false,
+                isPublic: false,
+              },
+            ],
     },
   });
 
@@ -153,9 +176,25 @@ const InstructorDetails = (props: {
         courseDescription: courseData?.description,
         items: courseData?.categories.map(category => `${category.id}`),
         image: courseData?.thumbnail,
-        sections: [
-          { title: '', description: '', video: undefined, isPublic: false },
-        ],
+        videos:
+          courseData?.videos.length > 0
+            ? courseData?.videos
+            : [
+                {
+                  title: '',
+                  description: '',
+                  bunnyVideoId: '',
+                  isTrailer: true,
+                  isPublic: true,
+                },
+                {
+                  title: '',
+                  description: '',
+                  bunnyVideoId: '',
+                  isTrailer: false,
+                  isPublic: false,
+                },
+              ],
       });
     }
   }, [form, courseData]);
@@ -166,17 +205,37 @@ const InstructorDetails = (props: {
 
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
-    name: 'sections',
+    name: 'videos',
   });
 
   const handleAddSection = () => {
     append({
       title: '',
       description: '',
-      video: undefined,
+      bunnyVideoId: '',
+      isTrailer: false,
       isPublic: false,
     });
   };
+
+  const { mutate, isPending: updateIsPending } = useSendRequest<
+    EditCourseType,
+    any
+  >({
+    mutationFn: (data: EditCourseType) => MUTATIONS.editProject(+id!!, data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to add course',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Course added successfully',
+    },
+    onSuccessCallback: () => {
+      queryClient.invalidateQueries({ queryKey: ['course'] });
+      form.reset();
+    },
+  });
 
   if (isPending) {
     return <ProjectDetailsFormSkeleton />;
@@ -190,10 +249,25 @@ const InstructorDetails = (props: {
     );
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  function onSubmit(values: z.infer<typeof FormSchema>) {
+    mutate({
+      categories: [
+        {
+          id: +values.items[0],
+          name: categoriesData
+            .map(category => category)
+            .filter(category => +category.id === +values.items[0])[0].name,
+        },
+      ],
+      title: values.courseTitle,
+      description: values.courseDescription,
+      thumbnail: values.image,
+      videos: values.videos.map((video, i) => ({
+        ...video,
+        isTrailer: i === 0 ? true : false,
+        isPublic: i === 0 ? true : video.isPublic,
+      })),
+    });
   }
 
   return (
@@ -412,7 +486,12 @@ const InstructorDetails = (props: {
             >
               DELETE COURSE
             </button>
-            <Button>Update</Button>
+            <Button
+              disabled={updateIsPending}
+              className="disabled:cursor-not-allowed"
+            >
+              {updateIsPending ? 'Updating...' : 'Update'}
+            </Button>
           </div>
         </form>
       </Form>
