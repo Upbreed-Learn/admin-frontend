@@ -5,34 +5,36 @@ import LessonsIcon from '@/assets/jsx-icons/lessons-icon';
 import ViewsIcon from '@/assets/jsx-icons/views-icon';
 import AvatarCustom from '@/components/ui/custom/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { CourseDetailsType } from '@/lib/constants';
 import type { ColumnDef } from '@tanstack/react-table';
 
-export interface CoursesType {
-  instructorImage: string;
-  courseTitle: string;
-  courseDuration: string;
-  instructorName: string;
-  lessons: string;
-  views: string;
-}
+// export interface CoursesType {
+//   instructorImage: string;
+//   courseTitle: string;
+//   courseDuration: string;
+//   instructorName: string;
+//   lessons: string;
+//   views: string;
+// }
 
-export const CourseColumns: ColumnDef<CoursesType>[] = [
+export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
   {
     accessorKey: 'instructorImage',
     header: () => null,
     cell: ({ row }) => {
+      const data = row.original;
       return (
         <AvatarCustom
-          src={row.original.instructorImage}
+          src={data.thumbnail}
           alt="Instructor Image"
-          fallback={row.original.instructorName.charAt(0).toUpperCase()}
+          fallback={data.instructor.fname.charAt(0).toUpperCase()}
           className="h-11 w-11"
         />
       );
     },
   },
   {
-    accessorKey: 'courseTitle',
+    accessorKey: 'title',
     header: () => (
       <div className="flex items-center gap-1">
         <CourseIcon />
@@ -51,15 +53,16 @@ export const CourseColumns: ColumnDef<CoursesType>[] = [
       </div>
     ),
     cell: ({ row }) => {
+      const data = row.original;
       return (
         <p className="text-[10px] font-semibold text-[#D0EA50]">
-          {row.original.instructorName}
+          {data.instructor.fname} {data.instructor.lname}
         </p>
       );
     },
   },
   {
-    accessorKey: 'courseDuration',
+    accessorKey: 'preview.durationInMinutes',
     header: () => (
       <div className="flex items-center gap-1">
         <DurationIcon />
@@ -70,7 +73,7 @@ export const CourseColumns: ColumnDef<CoursesType>[] = [
     ),
   },
   {
-    accessorKey: 'lessons',
+    accessorKey: 'preview.lessonCount',
     header: () => (
       <div className="flex items-center gap-1">
         <LessonsIcon />
@@ -88,10 +91,12 @@ export const CourseColumns: ColumnDef<CoursesType>[] = [
         <span className="text-[10px] font-semibold text-[#737373]">Views</span>
       </div>
     ),
-    cell: ({ row }) => {
+    cell: () => {
+      // const data = row.original;
       return (
         <div className="flex items-center gap-2.5">
-          <p>{row.original.views}</p>
+          {/* <p>{data}</p> */}
+          <p>0</p>
           <ViewsIcon fill="white" fill2="#FFFFFF40" />
         </div>
       );
@@ -99,7 +104,7 @@ export const CourseColumns: ColumnDef<CoursesType>[] = [
   },
 ];
 
-export const CourseColumnsSkeleton: ColumnDef<CoursesType>[] = [
+export const CourseColumnsSkeleton: ColumnDef<CourseDetailsType>[] = [
   {
     accessorKey: 'instructorImage',
     header: () => null,

@@ -1,43 +1,76 @@
 import { SearchInput } from '@/components/ui/custom/input';
 import DataTable from '../components/data-table';
-import {
-  CourseColumns,
-  CourseColumnsSkeleton,
-  type CoursesType,
-} from './columns';
+import { CourseColumns, CourseColumnsSkeleton } from './columns';
 import ExportDropdown from '@/components/ui/custom/dropdown-menu';
 import { MoreVertical } from 'lucide-react';
-import { useState } from 'react';
-import { useGetCourses } from '@/queries/hooks';
+import { useEffect, useState, type ChangeEvent } from 'react';
+import { useGetCourses, useGetSearchedCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
 import { useQueryClient } from '@tanstack/react-query';
 import PaginationSection from '@/components/ui/custom/pagination';
+import type { CourseDetailsType } from '@/lib/constants';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 
 const Courses = () => {
-  const dataSkeleton: CoursesType[] = [];
-
+  const dataSkeleton: CourseDetailsType[] = [];
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [activeList, setActiveList] = useState<CourseDetailsType[]>([]);
+  const debouncedSearch = useDebounce(search.trim(), 1000);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+  };
 
   const { data, isPending, isError } = useGetCourses(page);
+  const { data: searchedCoursesData } = useGetSearchedCourses(
+    page,
+    20,
+    debouncedSearch,
+  );
+  const searchedCourses: CourseDetailsType[] = searchedCoursesData?.data?.data;
 
   const queryClient = useQueryClient();
 
-  const coursesData: CoursesType[] = data?.data?.data;
+  const coursesData: CourseDetailsType[] = data?.data?.data;
+
+  useEffect(() => {
+    if (debouncedSearch.length > 0) {
+      setActiveList(searchedCourses);
+    } else {
+      setActiveList(coursesData);
+    }
+  }, [debouncedSearch, searchedCourses, coursesData]);
 
   for (let i = 0; i < 10; i++) {
     dataSkeleton.push({
-      instructorImage: 'https://i.pravatar.cc/150?img=1',
-      courseTitle: 'Selling Anything',
-      courseDuration: '1h 30m',
-      instructorName: 'Michelle Elegbe',
-      lessons: '10 Lessons',
-      views: '1,000,000',
+      thumbnail: 'https://i.pravatar.cc/150?img=1',
+      title: 'Selling Anything',
+      description:
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl eget ultrices ultricies, nunc nulla ultricies nisi, euismod ultrices nisl.',
+      instructor: {
+        fname: 'Michelle',
+        lname: 'Elegbe',
+      },
+      categories: [
+        {
+          id: 1,
+          name: 'Art & Culture',
+        },
+      ],
+      preview: {
+        lessonCount: 10,
+        durationInMinutes: 60,
+      },
+      tags: [],
+      videos: [],
+      id: '1',
     });
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <SearchInput />
+      <SearchInput value={search} onChange={e => handleChange(e)} />
       <div className="flex flex-col gap-3">
         <ExportDropdown className="self-end">
           <MoreVertical />
@@ -52,7 +85,7 @@ const Courses = () => {
           ) : isPending ? (
             <DataTable data={dataSkeleton} columns={CourseColumnsSkeleton} />
           ) : (
-            <DataTable data={coursesData} columns={CourseColumns} />
+            <DataTable data={activeList} columns={CourseColumns} />
           )}
         </div>
         {coursesData && coursesData.length > 0 && (

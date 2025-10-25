@@ -19,13 +19,21 @@ import {
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft } from 'lucide-react';
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { ArrowLeft, LoaderPinwheel } from 'lucide-react';
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import z from 'zod';
 import Tiptap from './text-editor';
-import { items } from '@/projects/filter';
+import { Input } from '@/components/ui/input';
+import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
+import { useGetCategories } from '@/queries/hooks';
+import type { BlogType, CategoryType } from '@/lib/constants';
+import { Skeleton } from '@/components/ui/skeleton';
+import useSendRequest from '@/lib/hooks/useSendRequest';
+import { MUTATIONS } from '@/queries';
+import { useQueryClient } from '@tanstack/react-query';
+import EditingWarningDialog from '@/components/editing-warning';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -37,27 +45,53 @@ const formSchema = z.object({
   mainContent: z.string().min(10, {
     message: 'Course Description must be at least 10 characters.',
   }),
-  items: z.array(z.string()).refine(value => value.some(item => item), {
+  image: z.union([
+    z.url('Must be a valid URL'),
+    z
+      .any()
+      .refine(
+        file =>
+          !file ||
+          (file instanceof File &&
+            file.size <= 10 * 1024 * 1024 &&
+            file.type.startsWith('image/')),
+        { message: 'Please upload an image file not more than 10MB.' },
+      ),
+  ]),
+  categories: z.array(z.string()).refine(value => value.some(item => item), {
     message: 'You have to select at least one item.',
   }),
 });
 
 const CreateBlog = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isPublished, setIsPublished] = useState(false);
   const [blogData, setBlogData] = useState<z.infer<typeof formSchema>>({
     title: '',
     description: '',
-    mainContent: '',
-    items: [],
+    mainContent: 'Input Blog Content Here...',
+    image: undefined,
+    categories: [],
   });
+
+  const {
+    data: categories,
+    isPending: isCategoriesPending,
+    isError: isCategoriesError,
+  } = useGetCategories(undefined, 20);
+
+  const categoriesData: CategoryType[] = categories?.data?.data;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
       description: '',
-      mainContent: '',
-      items: [],
+      mainContent: 'Input Blog Content Here...',
+      image: undefined,
+      categories: [],
     },
   });
 
@@ -68,14 +102,28 @@ const CreateBlog = () => {
 
   return (
     <>
-      <SelectCategory setOpen={setIsOpen} open={isOpen} blogData={blogData} />
-      <div className="flex flex-col gap-7">
-        <Button asChild className="w-max">
-          <Link to={'/blog'}>
-            <ArrowLeft />
-            Back
-          </Link>
-        </Button>
+      <SelectCategory
+        setOpen={setIsOpen}
+        open={isOpen}
+        blogData={blogData}
+        isPublished={isPublished}
+      />
+      <div className="flex flex-col gap-7 pb-10">
+        {form.formState.isDirty ? (
+          <EditingWarningDialog link="/blog">
+            <Button className="w-max">
+              <ArrowLeft />
+              Back
+            </Button>
+          </EditingWarningDialog>
+        ) : (
+          <Button asChild className="w-max">
+            <Link to={'/blog'}>
+              <ArrowLeft />
+              Back
+            </Link>
+          </Button>
+        )}
         <Form {...form}>
           <form className="flex gap-4" onSubmit={form.handleSubmit(onSubmit)}>
             <fieldset className="flex flex-3/4 flex-col gap-6">
@@ -106,6 +154,77 @@ const CreateBlog = () => {
               />
               <FormField
                 control={form.control}
+                name="image"
+                render={({ field: { value, onChange } }) => (
+                  <FormItem className="flex-1/4">
+                    <div
+                      className={cn(
+                        'flex h-[18.1875rem] basis-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[10px] bg-[#D9D9D9]',
+                        isDragging && 'border-[#305B43] bg-[#e5e5e5]',
+                      )}
+                      onDragOver={e => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                      }}
+                      onDragLeave={e => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                      }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const file = e.dataTransfer.files[0];
+                        if (
+                          file &&
+                          file.type.startsWith('image/') &&
+                          file.size <= 10 * 1024 * 1024
+                        ) {
+                          onChange(file);
+                        }
+                      }}
+                      onClick={() => inputRef.current?.click()}
+                    >
+                      <Input
+                        ref={inputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (
+                            file &&
+                            file.type.startsWith('image/') &&
+                            file.size <= 10 * 1024 * 1024
+                          ) {
+                            onChange(file);
+                          }
+                        }}
+                      />
+                      {value ? (
+                        <img
+                          src={
+                            typeof value === 'string'
+                              ? value
+                              : URL.createObjectURL(value)
+                          }
+                          alt="uploaded"
+                          className="size-full rounded object-cover"
+                        />
+                      ) : (
+                        <>
+                          <ImageUploadIcon />
+                          <p className="font-semibold text-[#9B9B9B]">
+                            UPLOAD PREVIEW IMAGE
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="mainContent"
                 render={({ field }) => <Tiptap field={field} />}
               />
@@ -114,53 +233,71 @@ const CreateBlog = () => {
               <fieldset className="flex flex-col items-start gap-4">
                 <FormField
                   control={form.control}
-                  name="items"
+                  name="categories"
                   render={() => (
                     <FormItem>
                       <div className="flex w-full max-w-[29.3125rem] basis-full flex-wrap items-center gap-1.5">
-                        {items.map(item => (
-                          <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="items"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={item.id}
-                                  className="flex flex-row items-center"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      className="hidden"
-                                      checked={field.value?.includes(item.id)}
-                                      onCheckedChange={checked => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...field.value,
-                                              item.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                value => value !== item.id,
-                                              ),
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel
-                                    className={cn(
-                                      'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
-                                      field.value?.includes(item.id) &&
-                                        'bg-[#D0EA50] text-black',
-                                    )}
+                        {isCategoriesError ? (
+                          <span>No categories found!</span>
+                        ) : isCategoriesPending ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {Array(10)
+                              .fill(null)
+                              .map((_, i) => (
+                                <Skeleton
+                                  key={i}
+                                  className="h-5 w-16 animate-pulse rounded bg-[#E6EFE6]"
+                                />
+                              ))}
+                          </div>
+                        ) : (
+                          categoriesData.map(item => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name="categories"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className="flex flex-row items-center"
                                   >
-                                    {item.label}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
+                                    <FormControl>
+                                      <Checkbox
+                                        className="hidden"
+                                        checked={field.value?.includes(
+                                          `${item.id}`,
+                                        )}
+                                        onCheckedChange={checked => {
+                                          return checked
+                                            ? field.onChange([
+                                                ...field.value,
+                                                `${item.id}`,
+                                              ])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  value =>
+                                                    value !== `${item.id}`,
+                                                ),
+                                              );
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel
+                                      className={cn(
+                                        'rounded bg-[#F1F1F1] px-1.5 py-1 text-xs/[100%] font-semibold text-[#9C9C9C] uppercase',
+                                        field.value?.includes(`${item.id}`) &&
+                                          'bg-[#D0EA50] text-black',
+                                      )}
+                                    >
+                                      {item.name}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
+                            />
+                          ))
+                        )}
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -174,10 +311,13 @@ const CreateBlog = () => {
                 </button>
               </fieldset>
               <div className="flex flex-col gap-3">
-                <Button className="bg-[#305B43] text-white hover:bg-[#305B43]/80">
+                <Button
+                  onClick={() => setIsPublished(false)}
+                  className="bg-[#305B43] text-white hover:bg-[#305B43]/80"
+                >
                   Save as draft
                 </Button>
-                <Button>Publish</Button>
+                <Button onClick={() => setIsPublished(true)}>Publish</Button>
               </div>
             </fieldset>
           </form>
@@ -193,8 +333,45 @@ const SelectCategory = (props: {
   setOpen: Dispatch<SetStateAction<boolean>>;
   open: boolean;
   blogData: z.infer<typeof formSchema>;
+  isPublished: boolean;
 }) => {
-  const { setOpen, open, blogData } = props;
+  const { setOpen, open, blogData, isPublished } = props;
+
+  const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useSendRequest<BlogType, any>({
+    mutationFn: (data: BlogType) => MUTATIONS.publishBlog(data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to publish blog',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Blog published successfully',
+    },
+    onSuccessCallback: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['blogs'],
+      });
+      navigate('/blogs');
+    },
+  });
+
+  const sendRequest = (type: 'news' | 'press') => {
+    const idNumArray = blogData.categories.map(Number);
+    mutate({
+      title: blogData.title,
+      description: blogData.description,
+      previewImage: blogData.image,
+      content: blogData.mainContent,
+      isPublished: isPublished,
+      type: type,
+      categoryIds: idNumArray,
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="flex h-64 w-3xs flex-col justify-center bg-[#305B43]">
@@ -204,8 +381,11 @@ const SelectCategory = (props: {
             You can choose a category for your blog post.
           </DialogDescription>
         </DialogHeader>
-        <Button onClick={() => console.log('PRESS', blogData)}>PRESS</Button>
-        <Button onClick={() => console.log('NEWS', blogData)}>NEWS</Button>
+        <Button onClick={() => sendRequest('press')}>PRESS</Button>
+        <Button onClick={() => sendRequest('news')}>NEWS</Button>
+        {isPending && (
+          <LoaderPinwheel className="animate-spin self-center text-white" />
+        )}
       </DialogContent>
     </Dialog>
   );

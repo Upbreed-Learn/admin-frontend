@@ -174,7 +174,7 @@ const InstructorCard = (props: InstructorDetailsType) => {
         <AccordionTrigger className="group hover:no-underline [&>svg]:text-white">
           <div className="flex basis-full items-center justify-between">
             <span className="flex items-center gap-[10px]">
-              <span className="text-sm/4 font-extrabold">{`${fname} ${lname}`}</span>
+              <span className="text-sm/4 font-extrabold capitalize">{`${fname} ${lname}`}</span>
               <span className="text-xs/4 font-medium">{email}</span>
             </span>
             <span className="pointer-events-none flex gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">

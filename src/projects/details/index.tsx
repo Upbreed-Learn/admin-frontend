@@ -35,7 +35,7 @@ import type {
 } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
-import EditingWarningDialog from './editing-warning';
+import EditingWarningDialog from '../../components/editing-warning';
 import { useGetCategories, useGetCourse } from '@/queries/hooks';
 import { MUTATIONS } from '@/queries';
 import DeleteDialog from '@/components/delete-dialog';
@@ -50,7 +50,7 @@ const UpdateProject = () => {
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-12">
           {isEdited ? (
-            <EditingWarningDialog>
+            <EditingWarningDialog link="/projects">
               <Button className="w-max">
                 <ArrowLeft />
                 Back

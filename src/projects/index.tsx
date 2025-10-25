@@ -9,13 +9,12 @@ import FilterIcon from '@/assets/jsx-icons/filter-icon';
 import FilterDialog from './filter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import type { CourseDetailsType } from '@/lib/constants';
 import PaginationSection from '@/components/ui/custom/pagination';
-import { useGetCourses } from '@/queries/hooks';
+import { useGetCourses, useGetSearchedCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
 import EmptyState from '@/components/empty';
-import { QUERIES } from '@/queries';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 // import { useForm } from 'react-hook-form';
@@ -28,18 +27,6 @@ import { cn } from '@/lib/utils';
 // type FormData = {
 //   name: string;
 // };
-
-const useGetSearchedCourses = (
-  page?: number,
-  limit?: number,
-  search?: string,
-) => {
-  return useQuery({
-    queryKey: ['courses', { page, limit, search }],
-    queryFn: () => QUERIES.getCourses(page, limit, search),
-    enabled: !!search,
-  });
-};
 
 const Projects = () => {
   const [page, setPage] = useState(1);

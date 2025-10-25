@@ -11,8 +11,8 @@ import {
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
-const EditingWarningDialog = (props: { children: ReactNode }) => {
-  const { children } = props;
+const EditingWarningDialog = (props: { children: ReactNode; link: string }) => {
+  const { children, link } = props;
 
   return (
     <Dialog>
@@ -38,7 +38,7 @@ const EditingWarningDialog = (props: { children: ReactNode }) => {
                   'bg-destructive hover:bg-destructive/80 cursor-pointer text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50'
                 }
               >
-                <Link to={'/projects'}>Yes, Discard changes</Link>
+                <Link to={link}>Yes, Discard changes</Link>
               </Button>
             </DialogClose>
             <DialogClose asChild>

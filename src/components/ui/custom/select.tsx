@@ -111,7 +111,11 @@ const SelectInput = (props: SelectInputprops) => {
           </FormControl>
           <SelectContent className="">
             {options?.map(option => (
-              <SelectItem key={option.value} value={option.value} className="">
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="capitalize"
+              >
                 {option.label}
               </SelectItem>
             ))}

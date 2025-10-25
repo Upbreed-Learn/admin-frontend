@@ -79,15 +79,6 @@ const AddNewCourse = () => {
     isError,
   } = useGetCategories(undefined, 20);
 
-  // const [allInstructors, categories] = useGetInstructorsAndCategories(
-  //   undefined,
-  //   20,
-  // );
-
-  // const areAnyPending = [allInstructors, categories].some(
-  //   query => query.status === 'pending',
-  // );
-
   const instructorsData: InstructorType[] = allInstructors?.data?.data;
   const categoriesData: CategoryType[] = categories?.data?.data;
 
