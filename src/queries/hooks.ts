@@ -29,3 +29,15 @@ export const useGetCourse = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useGetSearchedCourses = (
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
+  return useQuery({
+    queryKey: ['courses', { page, limit, search }],
+    queryFn: () => QUERIES.getCourses(page, limit, search),
+    enabled: !!search,
+  });
+};

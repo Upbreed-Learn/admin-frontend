@@ -113,3 +113,13 @@ export type EditCourseType = {
     isPublic: boolean;
   }[];
 };
+
+export interface BlogType {
+  title: string;
+  description: string;
+  previewImage: File;
+  content: string;
+  isPublished: boolean;
+  type: 'news' | 'press';
+  categoryIds: number[];
+}

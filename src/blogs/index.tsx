@@ -2,7 +2,12 @@ import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/custom/input';
 import PaginationSection from '@/components/ui/custom/pagination';
 import SelectInput from '@/components/ui/custom/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { CategoryType } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useGetCategories } from '@/queries/hooks';
+// import { QUERIES } from '@/queries';
+// import { useQuery } from '@tanstack/react-query';
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -12,6 +17,21 @@ import {
 } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 import { Link } from 'react-router';
+
+// const useGetBlogs = (
+//   type: 'press' | 'news',
+//   isPublished: boolean,
+//   categoryId: number,
+//   search?: string,
+//   page?: number,
+//   limit?: number,
+// ) => {
+//   return useQuery({
+//     queryKey: ['blogs', { type, isPublished, categoryId, search, page, limit }],
+//     queryFn: () =>
+//       QUERIES.getBlogs(type, isPublished, categoryId, search, page, limit),
+//   });
+// };
 
 const Blogs = () => {
   const [sort, setSort] = useQueryState('sort', {
@@ -23,6 +43,18 @@ const Blogs = () => {
   const [category, setCategory] = useQueryState('category', {
     defaultValue: 'press',
   });
+
+  const {
+    data: categories,
+    isPending: isCategoriesPending,
+    isError: isCategoriesError,
+  } = useGetCategories(undefined, 20);
+  const categoriesData: CategoryType[] = categories?.data?.data;
+
+  const categoryOptions = categoriesData?.map(item => ({
+    label: item.name,
+    value: item.id,
+  }));
 
   return (
     <div className="flex flex-col gap-8 pb-6">
@@ -113,21 +145,19 @@ const Blogs = () => {
                 )}
                 <span className="sr-only">Sort</span>
               </button>
-              <SelectInput
-                isFilter
-                placeholder="Filter"
-                contentClassName="bg-[#305B43] text-[#D0EA50]"
-                className="w-40 bg-[#00230F] data-[placeholder]:text-white [*]:text-[10px]/[100%] [*]:font-medium [*]:text-white"
-                options={[
-                  { label: 'FROM A-Z', value: 'a-z' },
-                  { label: 'LENGTH LOW TO HIGH', value: 'low-high' },
-                  { label: 'MUSIC', value: 'music' },
-                  { label: 'TECHNOLOGY', value: 'technology' },
-                  { label: 'ART', value: 'art' },
-                  { label: 'ENTERTAINMENT', value: 'entertainment' },
-                  { label: 'LIFESTYLE', value: 'lifestyle' },
-                ]}
-              />
+              {isCategoriesError ? (
+                <span>No categories found!</span>
+              ) : isCategoriesPending ? (
+                <Skeleton className="h-5 w-40 animate-pulse rounded bg-[#E6EFE6]" />
+              ) : (
+                <SelectInput
+                  isFilter
+                  placeholder="Filter"
+                  contentClassName="bg-[#305B43] text-[#D0EA50]"
+                  className="w-40 bg-[#00230F] data-[placeholder]:text-white [*]:text-[10px]/[100%] [*]:font-medium [*]:text-white"
+                  options={categoryOptions}
+                />
+              )}
             </div>
           </div>
         </div>

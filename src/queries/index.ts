@@ -1,4 +1,5 @@
 import type {
+  BlogType,
   CourseType,
   EditCourseType,
   InstructorType,
@@ -47,6 +48,9 @@ export const MUTATIONS = {
   },
   editProject: async function (id: number, data: EditCourseType) {
     return await https.patch(`/course/${id}`, data);
+  },
+  publishBlog: async function (data: BlogType) {
+    return await https.post(`/blog`, data);
   },
 };
 
@@ -108,5 +112,28 @@ export const QUERIES = {
   },
   getCourse: async function (id: number) {
     return await https.get(`/course/${id}`);
+  },
+  getBlogs: async function (
+    type: 'press' | 'news',
+    isPublished: boolean,
+    categoryId: number,
+    search?: string,
+    page?: number,
+    limit?: number,
+  ) {
+    limit = limit || LIMIT;
+    const params = new URLSearchParams();
+
+    if (page) params.append('page', `${page}`);
+    if (limit) params.append('limit', `${limit}`);
+    if (search) params.append('query', `${search}`);
+    if (type) params.append('type', `${type}`);
+    if (isPublished) params.append('isPublished', `${isPublished}`);
+    if (categoryId) params.append('categoryId', `${categoryId}`);
+
+    const queryString = params.toString();
+    const url = `/blogs?${queryString}`;
+
+    return await https.get(url);
   },
 };
