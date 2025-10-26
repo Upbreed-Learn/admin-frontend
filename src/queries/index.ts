@@ -3,6 +3,7 @@ import type {
   CourseType,
   EditCourseType,
   InstructorType,
+  VideosType,
 } from '@/lib/constants';
 import { https } from '@/lib/https';
 
@@ -49,8 +50,17 @@ export const MUTATIONS = {
   editProject: async function (id: number, data: EditCourseType) {
     return await https.patch(`/course/${id}`, data);
   },
-  publishBlog: async function (data: BlogType) {
+  editVideos: async function (id: number, data: VideosType) {
+    return await https.patch(`/course/${id}/videos`, { videos: data });
+  },
+  publishBlog: async function (data: Omit<BlogType, 'id'>) {
     return await https.post(`/blog`, data);
+  },
+  deleteBlog: async function (id: number) {
+    return await https.delete(`/blog/${id}`);
+  },
+  updateBlog: async function (id: number, data: Omit<BlogType, 'id'>) {
+    return await https.patch(`/blog/${id}`, data);
   },
 };
 
@@ -113,27 +123,34 @@ export const QUERIES = {
   getCourse: async function (id: number) {
     return await https.get(`/course/${id}`);
   },
+  getVideos: async function (id: number) {
+    return await https.get(`/course/${id}/video`);
+  },
   getBlogs: async function (
     type: 'press' | 'news',
-    isPublished: boolean,
-    categoryId: number,
+    isPublished: string | null,
+    categoryId?: number,
     search?: string,
     page?: number,
     limit?: number,
   ) {
-    limit = limit || LIMIT;
+    const defaultLimit = limit || LIMIT;
     const params = new URLSearchParams();
 
     if (page) params.append('page', `${page}`);
-    if (limit) params.append('limit', `${limit}`);
-    if (search) params.append('query', `${search}`);
+    if (defaultLimit) params.append('limit', `${defaultLimit}`);
+    if (search) params.append('search', `${search}`);
     if (type) params.append('type', `${type}`);
-    if (isPublished) params.append('isPublished', `${isPublished}`);
+    if (isPublished)
+      params.append('isPublished', `${isPublished === 'true' ? true : false}`);
     if (categoryId) params.append('categoryId', `${categoryId}`);
 
     const queryString = params.toString();
-    const url = `/blogs?${queryString}`;
+    const url = `/blog?${queryString}`;
 
     return await https.get(url);
+  },
+  getBlogById: async function (id: number) {
+    return await https.get(`/blog/${id}`);
   },
 };

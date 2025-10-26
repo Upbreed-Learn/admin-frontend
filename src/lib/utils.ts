@@ -17,6 +17,32 @@ export const checkAuthLoader = () => {
   return { isAuthenticated: true };
 };
 
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  // Define short month names
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const month = months[date.getUTCMonth()];
+  const day = date.getUTCDate();
+  const year = date.getUTCFullYear();
+
+  return `${month} ${day}, ${year}`;
+}
+
 //   interface MyTokenPayload {
 //     userId: string;
 //     email: string;

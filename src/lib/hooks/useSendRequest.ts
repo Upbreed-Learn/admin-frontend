@@ -24,7 +24,7 @@ const useSendRequest = <T, R>({
   onSuccessCallback,
 }: UsePostRequestProps<T, R>) => {
   const oneHourFromNow = new Date(new Date().getTime() + 60 * 60 * 1000);
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending, isSuccess } = useMutation({
     mutationFn,
     onSuccess: data => {
       if (cookie) {
@@ -60,7 +60,7 @@ const useSendRequest = <T, R>({
     },
   });
 
-  return { mutate, isPending };
+  return { mutate, isPending, isSuccess };
 };
 
 export default useSendRequest;
