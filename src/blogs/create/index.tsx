@@ -20,20 +20,31 @@ import {
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, LoaderPinwheel } from 'lucide-react';
-import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import z from 'zod';
 import Tiptap from './text-editor';
 import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { useGetCategories } from '@/queries/hooks';
-import type { BlogType, CategoryType } from '@/lib/constants';
+import type { BlogDetailsType, BlogType, CategoryType } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
-import useSendRequest from '@/lib/hooks/useSendRequest';
-import { MUTATIONS } from '@/queries';
-import { useQueryClient } from '@tanstack/react-query';
+import useSendRequest, {
+  errorToastClassName,
+} from '@/lib/hooks/useSendRequest';
+import { MUTATIONS, QUERIES } from '@/queries';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import EditingWarningDialog from '@/components/editing-warning';
+import ErrorState from '@/components/error';
+import { toast } from 'sonner';
+import DeleteDialog from '@/components/delete-dialog';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -63,11 +74,21 @@ const formSchema = z.object({
   }),
 });
 
+const useGetBlogById = (id: number) => {
+  return useQuery({
+    queryKey: ['blogs', { id }],
+    queryFn: () => QUERIES.getBlogById(id),
+    enabled: !!id,
+  });
+};
+
 const CreateBlog = () => {
+  const { id } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isPublished, setIsPublished] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [blogData, setBlogData] = useState<z.infer<typeof formSchema>>({
     title: '',
     description: '',
@@ -75,30 +96,64 @@ const CreateBlog = () => {
     image: undefined,
     categories: [],
   });
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const {
     data: categories,
     isPending: isCategoriesPending,
     isError: isCategoriesError,
   } = useGetCategories(undefined, 20);
+  const {
+    data: blogDetails,
+    isPending: isBlogPending,
+    isError: isBlogError,
+  } = useGetBlogById(+id!!);
 
   const categoriesData: CategoryType[] = categories?.data?.data;
+  const blogDetailsData: BlogDetailsType = blogDetails?.data;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      mainContent: 'Input Blog Content Here...',
-      image: undefined,
-      categories: [],
+      title: blogDetailsData?.title ?? '',
+      description: blogDetailsData?.description ?? '',
+      mainContent: blogDetailsData?.content ?? 'Input Blog Content Here...',
+      image: blogDetailsData?.previewImage ?? undefined,
+      categories:
+        blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
     },
   });
+
+  useEffect(() => {
+    if (blogDetails) {
+      form.reset({
+        title: blogDetailsData?.title ?? '',
+        description: blogDetailsData?.description ?? '',
+        mainContent: blogDetailsData?.content ?? 'Input Blog Content Here...',
+        image: blogDetailsData?.previewImage ?? undefined,
+        categories:
+          blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
+      });
+    }
+  }, [blogDetails, form]);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setIsOpen(true);
     setBlogData(data);
   };
+
+  if (id && isBlogPending) {
+    return <BlogCreateFormSkeleton />;
+  }
+
+  if (isBlogError) {
+    return (
+      <ErrorState
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ['blogs'] })}
+      />
+    );
+  }
 
   return (
     <>
@@ -107,6 +162,16 @@ const CreateBlog = () => {
         open={isOpen}
         blogData={blogData}
         isPublished={isPublished}
+        isDirty={form.formState.isDirty}
+      />
+      <DeleteDialog
+        delete={openDeleteDialog}
+        setDelete={setOpenDeleteDialog}
+        whatToDelete="blog"
+        id={+id!!}
+        queryKey={'blogs'}
+        deleteFn={() => MUTATIONS.deleteBlog(+id!!)}
+        onSuccessCallback={() => navigate('/blog')}
       />
       <div className="flex flex-col gap-7 pb-10">
         {form.formState.isDirty ? (
@@ -303,12 +368,15 @@ const CreateBlog = () => {
                     </FormItem>
                   )}
                 />
-                <button
-                  type="button"
-                  className="cursor-pointer text-[10px] font-bold text-[#737373] uppercase underline"
-                >
-                  Delete
-                </button>
+                {id && (
+                  <button
+                    onClick={() => setOpenDeleteDialog(true)}
+                    type="button"
+                    className="cursor-pointer text-[10px] font-bold text-[#737373] uppercase underline"
+                  >
+                    Delete
+                  </button>
+                )}
               </fieldset>
               <div className="flex flex-col gap-3">
                 <Button
@@ -334,15 +402,15 @@ const SelectCategory = (props: {
   open: boolean;
   blogData: z.infer<typeof formSchema>;
   isPublished: boolean;
+  isDirty: boolean;
 }) => {
-  const { setOpen, open, blogData, isPublished } = props;
-
+  const { id } = useParams();
+  const { setOpen, open, blogData, isPublished, isDirty } = props;
   const navigate = useNavigate();
-
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useSendRequest<BlogType, any>({
-    mutationFn: (data: BlogType) => MUTATIONS.publishBlog(data),
+  const { mutate, isPending } = useSendRequest<Omit<BlogType, 'id'>, any>({
+    mutationFn: (data: Omit<BlogType, 'id'>) => MUTATIONS.publishBlog(data),
     errorToast: {
       title: 'Error',
       description: 'Failed to publish blog',
@@ -355,21 +423,62 @@ const SelectCategory = (props: {
       queryClient.invalidateQueries({
         queryKey: ['blogs'],
       });
-      navigate('/blogs');
+      navigate('/blog');
+    },
+  });
+
+  const { mutate: mutateBlog, isPending: isMutationPending } = useSendRequest<
+    Omit<BlogType, 'id'>,
+    any
+  >({
+    mutationFn: (data: Omit<BlogType, 'id'>) =>
+      MUTATIONS.updateBlog(+id!!, data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to publish blog',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Blog published successfully',
+    },
+    onSuccessCallback: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['blogs'],
+      });
+      navigate('/blog');
     },
   });
 
   const sendRequest = (type: 'news' | 'press') => {
     const idNumArray = blogData.categories.map(Number);
-    mutate({
-      title: blogData.title,
-      description: blogData.description,
-      previewImage: blogData.image,
-      content: blogData.mainContent,
-      isPublished: isPublished,
-      type: type,
-      categoryIds: idNumArray,
-    });
+
+    if (id && isDirty) {
+      mutateBlog({
+        title: blogData.title,
+        description: blogData.description,
+        previewImage: blogData.image,
+        content: blogData.mainContent,
+        isPublished: isPublished,
+        type: type,
+        categoryIds: idNumArray,
+      });
+    } else if (id && !isDirty) {
+      toast.error(`No changes made to blog`, {
+        description: 'Edit blog to proceed',
+        className: errorToastClassName,
+      });
+    }
+
+    if (!id)
+      mutate({
+        title: blogData.title,
+        description: blogData.description,
+        previewImage: blogData.image,
+        content: blogData.mainContent,
+        isPublished: isPublished,
+        type: type,
+        categoryIds: idNumArray,
+      });
   };
 
   return (
@@ -383,10 +492,62 @@ const SelectCategory = (props: {
         </DialogHeader>
         <Button onClick={() => sendRequest('press')}>PRESS</Button>
         <Button onClick={() => sendRequest('news')}>NEWS</Button>
-        {isPending && (
-          <LoaderPinwheel className="animate-spin self-center text-white" />
-        )}
+        {isPending ||
+          (isMutationPending && (
+            <LoaderPinwheel className="animate-spin self-center text-white" />
+          ))}
       </DialogContent>
     </Dialog>
+  );
+};
+
+const BlogCreateFormSkeleton = () => {
+  return (
+    <div
+      role="status"
+      aria-label="loading blog create form"
+      className="flex gap-4"
+    >
+      <fieldset className="flex flex-3/4 flex-col gap-6">
+        {/* Title */}
+        <Skeleton className="h-8 w-2/3 animate-pulse self-start rounded bg-[#E6EFE6]" />
+
+        {/* Description */}
+        <Skeleton className="h-28 w-full animate-pulse rounded bg-[#E6EFE6]" />
+
+        {/* Image upload box */}
+        <Skeleton className="h-[18.1875rem] basis-full animate-pulse rounded-[10px] bg-[#E6EFE6]" />
+
+        {/* Rich editor area */}
+        <Skeleton className="h-64 w-full animate-pulse rounded bg-[#E6EFE6]" />
+      </fieldset>
+
+      <fieldset className="flex flex-1/4 flex-col justify-between">
+        <div className="flex flex-col gap-4">
+          {/* Categories label */}
+          <Skeleton className="h-5 w-32 animate-pulse rounded bg-[#E6EFE6]" />
+
+          {/* Categories chips */}
+          <div className="flex flex-wrap gap-2">
+            {Array(8)
+              .fill(null)
+              .map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="h-5 w-16 animate-pulse rounded bg-[#E6EFE6]"
+                />
+              ))}
+          </div>
+
+          {/* Delete button placeholder */}
+          <Skeleton className="h-6 w-20 animate-pulse rounded bg-[#E6EFE6]" />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-10 w-full animate-pulse rounded bg-[#E6EFE6]" />
+          <Skeleton className="h-10 w-full animate-pulse rounded bg-[#E6EFE6]" />
+        </div>
+      </fieldset>
+    </div>
   );
 };

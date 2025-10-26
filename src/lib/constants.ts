@@ -100,21 +100,20 @@ export type CourseDetailsType = {
 export type EditCourseType = {
   title: string;
   description: string;
-  thumbnail: File;
-  categories: {
-    id: number;
-    name: string;
-  }[];
-  videos: {
-    title: string;
-    description: string;
-    bunnyVideoId: string;
-    isTrailer: boolean;
-    isPublic: boolean;
-  }[];
+  image?: File;
+  categories: number[];
 };
 
+export type VideosType = {
+  title: string;
+  description: string;
+  bunnyVideoId: string;
+  isTrailer: boolean;
+  isPublic: boolean;
+}[];
+
 export interface BlogType {
+  id: string;
   title: string;
   description: string;
   previewImage: File;
@@ -123,3 +122,26 @@ export interface BlogType {
   type: 'news' | 'press';
   categoryIds: number[];
 }
+
+export type BlogDetailsType = {
+  id: number;
+  title: string;
+  description: string;
+  previewImage: string | null;
+  content: string;
+  isPublished: boolean;
+  type: 'news' | 'press';
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  categories: {
+    id: number;
+    category: {
+      id: number;
+      name: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+    };
+  }[];
+};

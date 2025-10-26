@@ -27,17 +27,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { DraggableSections } from './draggable';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   CategoryType,
   CourseDetailsType,
   EditCourseType,
+  VideosType,
 } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import ErrorState from '@/components/error';
 import EditingWarningDialog from '../../components/editing-warning';
 import { useGetCategories, useGetCourse } from '@/queries/hooks';
-import { MUTATIONS } from '@/queries';
+import { MUTATIONS, QUERIES } from '@/queries';
 import DeleteDialog from '@/components/delete-dialog';
 import useSendRequest from '@/lib/hooks/useSendRequest';
 
@@ -72,6 +73,13 @@ const UpdateProject = () => {
 };
 
 export default UpdateProject;
+
+const useGetVideos = (id: number) => {
+  return useQuery({
+    queryKey: ['videos', { id }],
+    queryFn: () => QUERIES.getVideos(+id),
+  });
+};
 
 const videoSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
@@ -132,9 +140,15 @@ const InstructorDetails = (props: {
     isPending: isCategoriesPending,
     isError: isCategoriesError,
   } = useGetCategories(undefined, 20);
+  const {
+    data: videos,
+    isPending: isVideosPending,
+    isError: isVideosError,
+  } = useGetVideos(+id!!);
 
   const courseData: CourseDetailsType = data?.data?.data;
   const categoriesData: CategoryType[] = categories?.data?.data;
+  const videosData: VideosType = videos?.data?.data;
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -146,8 +160,8 @@ const InstructorDetails = (props: {
       items: courseData?.categories.map(category => `${category.id}`),
       image: courseData?.thumbnail,
       videos:
-        courseData?.videos.length > 0
-          ? courseData?.videos
+        videosData?.length > 0
+          ? videosData
           : [
               {
                 title: '',
@@ -177,8 +191,8 @@ const InstructorDetails = (props: {
         items: courseData?.categories.map(category => `${category.id}`),
         image: courseData?.thumbnail,
         videos:
-          courseData?.videos.length > 0
-            ? courseData?.videos
+          videosData?.length > 0
+            ? videosData
             : [
                 {
                   title: '',
@@ -218,10 +232,30 @@ const InstructorDetails = (props: {
     });
   };
 
-  const { mutate, isPending: updateIsPending } = useSendRequest<
-    EditCourseType,
-    any
-  >({
+  const {
+    mutate: mutateVideos,
+    isPending: updateVideosIsPending,
+    isSuccess: updateVideoIsSuccess,
+  } = useSendRequest<VideosType, any>({
+    mutationFn: (data: VideosType) => MUTATIONS.editVideos(+id!!, data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to update videos',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Videos updated successfully',
+    },
+    onSuccessCallback: () => {
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+    },
+  });
+
+  const {
+    mutate,
+    isPending: updateIsPending,
+    isSuccess: updateProjectIsSuccess,
+  } = useSendRequest<EditCourseType, any>({
     mutationFn: (data: EditCourseType) => MUTATIONS.editProject(+id!!, data),
     errorToast: {
       title: 'Error',
@@ -233,41 +267,55 @@ const InstructorDetails = (props: {
     },
     onSuccessCallback: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
-      form.reset();
     },
   });
 
-  if (isPending) {
+  useEffect(() => {
+    if (updateProjectIsSuccess || updateVideoIsSuccess) {
+      navigate('/projects');
+    }
+  }, [updateProjectIsSuccess, updateVideoIsSuccess]);
+
+  if (isPending || isVideosPending) {
     return <ProjectDetailsFormSkeleton />;
   }
 
-  if (isError) {
+  if (isError || isVideosError) {
     return (
       <ErrorState
-        onRetry={() => queryClient.invalidateQueries({ queryKey: ['course'] })}
+        onRetry={() => (
+          queryClient.invalidateQueries({ queryKey: ['course'] }),
+          queryClient.invalidateQueries({ queryKey: ['videos'] })
+        )}
       />
     );
   }
 
   function onSubmit(values: z.infer<typeof FormSchema>) {
-    mutate({
-      categories: [
-        {
-          id: +values.items[0],
-          name: categoriesData
-            .map(category => category)
-            .filter(category => +category.id === +values.items[0])[0].name,
-        },
-      ],
-      title: values.courseTitle,
-      description: values.courseDescription,
-      thumbnail: values.image,
-      videos: values.videos.map((video, i) => ({
-        ...video,
-        isTrailer: i === 0 ? true : false,
-        isPublic: i === 0 ? true : video.isPublic,
-      })),
-    });
+    if (typeof values.image === 'string') {
+      mutate({
+        categories: values.items.map(cat => +cat),
+        title: values.courseTitle,
+        description: values.courseDescription,
+      });
+    } else
+      mutate({
+        categories: values.items.map(cat => +cat),
+        title: values.courseTitle,
+        description: values.courseDescription,
+        image: values.image,
+      });
+
+    if (values.videos.length > 0) {
+      mutateVideos([
+        ...values.videos.map((video, i) => ({
+          ...video,
+          id: i,
+          isTrailer: i === 0 ? true : false,
+          isPublic: i === 0 ? true : video.isPublic,
+        })),
+      ]);
+    }
   }
 
   return (
@@ -487,10 +535,12 @@ const InstructorDetails = (props: {
               DELETE COURSE
             </button>
             <Button
-              disabled={updateIsPending}
+              disabled={updateIsPending || updateVideosIsPending}
               className="disabled:cursor-not-allowed"
             >
-              {updateIsPending ? 'Updating...' : 'Update'}
+              {updateIsPending || updateVideosIsPending
+                ? 'Updating...'
+                : 'Update'}
             </Button>
           </div>
         </form>
