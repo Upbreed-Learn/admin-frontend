@@ -8,7 +8,10 @@ import Image from '@tiptap/extension-image';
 import { Button } from '@/components/ui/button';
 import { ImageIcon, Heading1, Heading2, Heading3 } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
-import type { ControllerRenderProps } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
+import type z from 'zod';
+import type { formSchema } from '.';
+import type { BlogDetailsType } from '@/lib/constants';
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -137,8 +140,11 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
   );
 };
 
-const Tiptap = (props: { field: ControllerRenderProps<any, any> }) => {
-  const { field } = props;
+const Tiptap = (props: {
+  form: UseFormReturn<z.infer<typeof formSchema>>;
+  blogDetailsData: BlogDetailsType;
+}) => {
+  const { form, blogDetailsData } = props;
 
   const editor = useEditor({
     extensions: [
@@ -283,11 +289,17 @@ const Tiptap = (props: { field: ControllerRenderProps<any, any> }) => {
         },
       }),
     ],
-    content: field.value || '<p></p>',
+    content: form.watch('mainContent') || '<p></p>',
     onUpdate: ({ editor }) => {
-      field.onChange(editor.getHTML());
+      form.setValue('mainContent', editor.getHTML(), { shouldDirty: true });
     },
   });
+
+  useEffect(() => {
+    if (editor && blogDetailsData?.content) {
+      editor.commands.setContent(blogDetailsData.content);
+    }
+  }, [blogDetailsData?.content, editor]);
 
   return (
     <div className="flex flex-col">

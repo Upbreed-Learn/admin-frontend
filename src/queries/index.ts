@@ -54,13 +54,21 @@ export const MUTATIONS = {
     return await https.patch(`/course/${id}/videos`, { videos: data });
   },
   publishBlog: async function (data: Omit<BlogType, 'id'>) {
-    return await https.post(`/blog`, data);
+    return await https.post(`/blog`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
   deleteBlog: async function (id: number) {
     return await https.delete(`/blog/${id}`);
   },
   updateBlog: async function (id: number, data: Omit<BlogType, 'id'>) {
-    return await https.patch(`/blog/${id}`, data);
+    return await https.patch(`/blog/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
 };
 

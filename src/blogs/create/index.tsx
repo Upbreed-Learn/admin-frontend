@@ -46,7 +46,7 @@ import ErrorState from '@/components/error';
 import { toast } from 'sonner';
 import DeleteDialog from '@/components/delete-dialog';
 
-const formSchema = z.object({
+export const formSchema = z.object({
   title: z.string().min(2, {
     message: 'Title must be at least 2 characters.',
   }),
@@ -118,7 +118,7 @@ const CreateBlog = () => {
     defaultValues: {
       title: blogDetailsData?.title ?? '',
       description: blogDetailsData?.description ?? '',
-      mainContent: blogDetailsData?.content ?? 'Input Blog Content Here...',
+      mainContent: blogDetailsData?.content!! ?? 'Input Blog Content Here...',
       image: blogDetailsData?.previewImage ?? undefined,
       categories:
         blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
@@ -130,7 +130,7 @@ const CreateBlog = () => {
       form.reset({
         title: blogDetailsData?.title ?? '',
         description: blogDetailsData?.description ?? '',
-        mainContent: blogDetailsData?.content ?? 'Input Blog Content Here...',
+        mainContent: blogDetailsData?.content!! ?? 'Input Blog Content Here...',
         image: blogDetailsData?.previewImage ?? undefined,
         categories:
           blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
@@ -291,7 +291,9 @@ const CreateBlog = () => {
               <FormField
                 control={form.control}
                 name="mainContent"
-                render={({ field }) => <Tiptap field={field} />}
+                render={() => (
+                  <Tiptap form={form} blogDetailsData={blogDetailsData} />
+                )}
               />
             </fieldset>
             <fieldset className="flex flex-1/4 flex-col justify-between">
@@ -492,10 +494,9 @@ const SelectCategory = (props: {
         </DialogHeader>
         <Button onClick={() => sendRequest('press')}>PRESS</Button>
         <Button onClick={() => sendRequest('news')}>NEWS</Button>
-        {isPending ||
-          (isMutationPending && (
-            <LoaderPinwheel className="animate-spin self-center text-white" />
-          ))}
+        {(isPending || isMutationPending) && (
+          <LoaderPinwheel className="animate-spin self-center text-white" />
+        )}
       </DialogContent>
     </Dialog>
   );
