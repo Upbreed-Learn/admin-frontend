@@ -121,7 +121,9 @@ const CreateBlog = () => {
       mainContent: blogDetailsData?.content!! ?? 'Input Blog Content Here...',
       image: blogDetailsData?.previewImage ?? undefined,
       categories:
-        blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
+        blogDetailsData?.categories.map(
+          category => `${category.category.id}`,
+        ) ?? [],
     },
   });
 
@@ -133,7 +135,9 @@ const CreateBlog = () => {
         mainContent: blogDetailsData?.content!! ?? 'Input Blog Content Here...',
         image: blogDetailsData?.previewImage ?? undefined,
         categories:
-          blogDetailsData?.categories.map(category => `${category.id}`) ?? [],
+          blogDetailsData?.categories.map(
+            category => `${category.category.id}`,
+          ) ?? [],
       });
     }
   }, [blogDetails, form]);
