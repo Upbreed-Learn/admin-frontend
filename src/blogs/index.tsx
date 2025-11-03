@@ -54,6 +54,14 @@ const Blogs = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const handleValueChange = (newValue: string) => {
+    if (newValue === '_clear') {
+      setValue('');
+    } else {
+      setValue(newValue);
+    }
+  };
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
@@ -150,7 +158,7 @@ const Blogs = () => {
                   </button>
                 </li>
               </ul>
-              <ul className="flex items-center gap-2 rounded bg-[#305B43] px-2 [&_button]:text-[9px]/[100%] [&_button]:font-semibold">
+              <ul className="flex items-center gap-2 rounded bg-[#305B43] px-2 [&_button]:text-xs/[100%] [&_button]:font-semibold">
                 <li>
                   <button
                     onClick={() => setCategory('press')}
@@ -201,7 +209,7 @@ const Blogs = () => {
                   className="w-40 bg-[#00230F] data-[placeholder]:text-white [*]:text-[10px]/[100%] [*]:font-medium [*]:text-white"
                   options={categoryOptions}
                   selectValue={value}
-                  setChange={setValue}
+                  setChange={e => handleValueChange(e)}
                 />
               )}
             </div>

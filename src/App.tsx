@@ -13,11 +13,13 @@ import Courses from './courses';
 import CreateBlog from './blogs/create';
 import Login from './auth';
 import { checkAuthLoader } from './lib/utils';
+import ErrorPage from './ErrorPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     loader: checkAuthLoader,
     children: [
       {
