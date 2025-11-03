@@ -27,7 +27,7 @@ interface SelectInputprops extends ComponentProps<'select'> {
   selectValue?: string;
   selectedDefault?: string;
   isFilter?: boolean;
-  //   children?: ReactNode;
+
   selectClassName?: string;
   contentClassName?: string;
   isPending?: boolean;
@@ -69,6 +69,7 @@ const SelectInput = (props: SelectInputprops) => {
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent className={cn('space-y-3', contentClassName)}>
+          {isFilter && <SelectItem value="_clear">All</SelectItem>}
           {options.map(option => (
             <SelectItem
               key={option.value}
