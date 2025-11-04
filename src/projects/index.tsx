@@ -189,15 +189,18 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
     >
       <div className="flex items-center justify-end gap-2.5">
         <div className="flex basis-full flex-col gap-1.5 text-end">
-          <Link
-            to={`/projects/${details.details.id}`}
-            className="border-b border-[#FFFFFF4D] pb-1.5"
-          >
-            <span className="absolute inset-0"></span>
-            <p className="text-sm font-extrabold text-white">
-              {details.details.title}
+          <div className="border-b border-[#FFFFFF4D] pb-1.5">
+            <Link to={`/projects/${details.details.id}`}>
+              <span className="absolute inset-0"></span>
+              <p className="text-sm font-extrabold text-white">
+                {details.details.title}
+              </p>
+            </Link>
+            <p className="text-xs text-[#D0EA50]">
+              {details.details.instructor.fname}{' '}
+              {details.details.instructor.lname}
             </p>
-          </Link>
+          </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm text-white">
               {details.details.preview.durationInMinutes}
@@ -216,7 +219,7 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
         />
       </div>
       <p className="w-max rounded-md bg-[#D0EA50] px-2 py-0.5 text-xs font-semibold">
-        {details.details.categories[0].name}
+        {details.details.categories[0]?.name}
       </p>
     </div>
   );
