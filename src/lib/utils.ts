@@ -54,12 +54,12 @@ export function formatDate(dateString: string): string {
 //   const token =
 //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhlcGl5Nzg3NDdAZWx5Z2lmdHMuY29tIiwiaWQiOiIyIiwiZm5hbWUiOiJSb3NzIiwibG5hbWUiOiJHZWxsZXIiLCJyb2xlcyI6WyJVU0VSIl0sImRldmljZVNpZ25hdHVyZSI6ImE3YjNjOWQyLWUxZjAtNGc1aC1pNmo3LWs4bDltMG4xbzJwMyIsImlhdCI6MTc2MDcyMTYyOSwiZXhwIjoxNzY4NDk3NjI5fQ.R_Tt91uxMJTHLYu5O30wobU6iwEE4gQNsCGZ0s4XQPM';
 
-//   try {
-//     const decoded = jwtDecode<MyTokenPayload>(token);
-//     console.log(decoded);
-//     console.log(decoded.userId);
-//     console.log(decoded.email);
-//     console.log(new Date(decoded.exp * 1000)); // Convert exp to readable date
-//   } catch (error) {
-//     console.error('Invalid token', error);
-//   }
+// try {
+//   const decoded = jwtDecode<MyTokenPayload>(token);
+//   console.log(decoded);
+//   console.log(decoded.userId);
+//   console.log(decoded.email);
+//   console.log(new Date(decoded.exp * 1000)); // Convert exp to readable date
+// } catch (error) {
+//   console.error('Invalid token', error);
+// }
