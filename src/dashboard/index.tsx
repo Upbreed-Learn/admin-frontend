@@ -214,7 +214,7 @@ const SummaryCardError = ({
   );
 };
 
-const TotalRevenueSkeleton = ({ className }: { className?: string }) => {
+export const TotalRevenueSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
       role="status"
@@ -243,7 +243,7 @@ const TotalRevenueSkeleton = ({ className }: { className?: string }) => {
   );
 };
 
-const TotalRevenueError = ({
+export const TotalRevenueError = ({
   message,
   onRetry,
   className,

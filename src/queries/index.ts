@@ -170,4 +170,13 @@ export const QUERIES = {
 
     return await https.get(url);
   },
+  getFinanceData: async function (period?: '24h' | '7d' | '30d' | '12m') {
+    const params = new URLSearchParams();
+
+    if (period) params.append('period', period);
+    const queryString = params.toString();
+    const url = `/admin/finance?${queryString}`;
+
+    return await https.get(url);
+  },
 };
