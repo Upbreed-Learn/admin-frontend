@@ -39,7 +39,7 @@ const Finance = () => {
         </div>
       </div>
       <div className="flex items-start gap-6">
-        <TotalRevenueChart height={180} className="flex-2/3" />
+        {/* <TotalRevenueChart height={180} className="flex-2/3" /> */}
         <TransactionHistory />
       </div>
     </div>
