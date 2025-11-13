@@ -182,7 +182,7 @@ const InstructorDetails = (props: {
   });
 
   useEffect(() => {
-    if (courseData) {
+    if (courseData && videosData) {
       form.reset({
         fullName:
           courseData?.instructor.fname + ' ' + courseData?.instructor.lname,
@@ -211,7 +211,7 @@ const InstructorDetails = (props: {
               ],
       });
     }
-  }, [form, courseData]);
+  }, [form, courseData, videosData]);
 
   useEffect(() => {
     setIsEdited(form.formState.isDirty);

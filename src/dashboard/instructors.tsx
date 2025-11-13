@@ -66,9 +66,7 @@ const InstructorCard = (props: { instructor: CourseDetailsType }) => {
       </div>
       <div className="flex items-center gap-1.5">
         <EyeIcon size={16} />
-        <p className="text-[10px]/[100%] font-semibold text-[#474747]">
-          10,456
-        </p>
+        <p className="text-[10px]/[100%] font-semibold text-[#474747]">0</p>
       </div>
     </div>
   );
