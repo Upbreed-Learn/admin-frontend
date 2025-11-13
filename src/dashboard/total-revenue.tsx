@@ -1,30 +1,16 @@
 import RevenueChart from '@/components/charts/revenue';
 import { cn } from '@/lib/utils';
-interface DataPoint {
-  month: string;
-  usd: number;
-  naira: number;
-}
+
+type DataPoint = { month: string; year: number; usd: number; naira: number };
+type MonthData = { month: string; usd: number; naira: number }; // e.g. "2025-09"
 
 export default function TotalRevenueChart(props: {
   height?: number;
   className?: string;
+  revenueData?: MonthData[];
 }) {
-  const { height = 120, className } = props;
-  const data: DataPoint[] = [
-    { month: 'Jan', usd: 25000, naira: 72000 },
-    { month: 'Feb', usd: 35000, naira: 110000 },
-    { month: 'Mar', usd: 32000, naira: 22000 },
-    { month: 'Apr', usd: 28000, naira: 48000 },
-    { month: 'May', usd: 38000, naira: 180000 },
-    { month: 'Jun', usd: 430567, naira: 52000 },
-    { month: 'Jul', usd: 42000, naira: 130000 },
-    { month: 'Aug', usd: 35000, naira: 210000 },
-    { month: 'Sept', usd: 48000, naira: 35000 },
-    { month: 'Oct', usd: 52000, naira: 45657 },
-    { month: 'Nov', usd: 50000, naira: 250000 },
-    { month: 'Des', usd: 55000, naira: 270000 },
-  ];
+  const { height = 120, className, revenueData } = props;
+  const data = generateCurrencyDataPoints(revenueData!!);
 
   return (
     <div
@@ -54,4 +40,45 @@ export default function TotalRevenueChart(props: {
       <RevenueChart data={data} height={height} />
     </div>
   );
+}
+
+function generateCurrencyDataPoints(data: MonthData[]): DataPoint[] {
+  if (!data.length) return [];
+
+  // Sort data ascending by month
+  const sorted = [...data].sort((a, b) => a.month.localeCompare(b.month));
+
+  // Determine the latest month in the dataset
+  const latestKey = sorted[sorted.length - 1].month; // e.g. "2025-11"
+  const latestDate = new Date(latestKey + '-01');
+
+  // Generate the last 6 months (oldest → newest)
+  const months: string[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(latestDate);
+    d.setMonth(d.getMonth() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    months.push(key);
+  }
+
+  // Create a lookup map for easy access
+  const map = new Map<string, { usd: number; naira: number }>();
+  for (const { month, usd, naira } of data) {
+    map.set(month, { usd, naira });
+  }
+
+  // Convert to DataPoint with month + year
+  return months.map(key => {
+    const d = new Date(key + '-01');
+    const monthName = d.toLocaleString('default', { month: 'long' });
+    const year = d.getFullYear();
+    const value = map.get(key) ?? { usd: 0, naira: 0 };
+
+    return {
+      month: monthName,
+      year,
+      usd: value.usd,
+      naira: value.naira,
+    };
+  });
 }

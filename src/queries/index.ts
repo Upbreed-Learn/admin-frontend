@@ -6,6 +6,7 @@ import type {
   VideosType,
 } from '@/lib/constants';
 import { https } from '@/lib/https';
+import { get } from 'react-hook-form';
 
 const LIMIT = 9;
 
@@ -160,5 +161,14 @@ export const QUERIES = {
   },
   getBlogById: async function (id: number) {
     return await https.get(`/blog/${id}`);
+  },
+  getDashboardData: async function (startDate?: string) {
+    const params = new URLSearchParams();
+
+    if (startDate) params.append('startDate', startDate);
+    const queryString = params.toString();
+    const url = `/admin/dashboard?${queryString}`;
+
+    return await https.get(url);
   },
 };
