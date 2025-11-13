@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import FinanceTabs from './tabs';
 import { useQueryState } from 'nuqs';
-import TotalRevenueChart from '@/dashboard/total-revenue';
+// import TotalRevenueChart from '@/dashboard/total-revenue';
 import { ArrowLeftRight } from 'lucide-react';
 import MoreTransactionHistoryModal from './more-transaction-history-modal';
 
@@ -39,7 +39,7 @@ const Finance = () => {
         </div>
       </div>
       <div className="flex items-start gap-6">
-        <TotalRevenueChart height={180} className="flex-2/3" />
+        {/* <TotalRevenueChart height={180} className="flex-2/3" /> */}
         <TransactionHistory />
       </div>
     </div>

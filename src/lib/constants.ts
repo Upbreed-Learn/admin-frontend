@@ -145,3 +145,22 @@ export type BlogDetailsType = {
     };
   }[];
 };
+
+export interface DashboardDataType {
+  totalInstructors: number;
+  totalSubscribers: number;
+  totalRevenue: {
+    usd: number;
+    naira: number;
+  };
+  totalUsers: number;
+  subscribersHistory: {
+    month: string;
+    count: number;
+  }[];
+  revenueHistory: {
+    month: string;
+    usd: number;
+    naira: number;
+  }[];
+}

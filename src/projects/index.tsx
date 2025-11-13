@@ -16,7 +16,7 @@ import { useGetCourses, useGetSearchedCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
 import EmptyState from '@/components/empty';
 import { useDebounce } from '@/lib/hooks/useDebounce';
-import { cn } from '@/lib/utils';
+import { cn, formatToHMS } from '@/lib/utils';
 // import { useForm } from 'react-hook-form';
 // import { https } from '@/lib/https';
 
@@ -203,7 +203,7 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm text-white">
-              {details.details.preview.durationInMinutes}
+              {formatToHMS(details.details.preview.durationInMinutes)}
             </p>
             <p className="text-sm font-semibold text-white">
               {details.details.preview.lessonCount} Lesson

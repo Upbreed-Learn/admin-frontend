@@ -43,6 +43,24 @@ export function formatDate(dateString: string): string {
   return `${month} ${day}, ${year}`;
 }
 
+export function formatNumber(num: number): string {
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(num % 1_000_000 === 0 ? 0 : 1) + 'M';
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(num % 1_000 === 0 ? 0 : 1) + 'K';
+  } else {
+    return num.toString();
+  }
+}
+
+export function formatToHMS(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${hours}H:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 //   interface MyTokenPayload {
 //     userId: string;
 //     email: string;
