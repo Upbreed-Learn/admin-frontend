@@ -3,22 +3,22 @@ import { useQueryState } from 'nuqs';
 
 const FinanceTabs = () => {
   const [duration, setDuration] = useQueryState('duration', {
-    defaultValue: '12-months',
+    defaultValue: '12m',
   });
 
-  console.log(duration);
 
   return (
     <Tabs
-      defaultValue="12-months"
+      defaultValue="12m"
       onValueChange={value => setDuration(value)}
+      value={duration}
       className="w-[400px]"
     >
       <TabsList>
-        <TabsTrigger value="12-months">12 Months</TabsTrigger>
-        <TabsTrigger value="30-days">30 Days</TabsTrigger>
-        <TabsTrigger value="7-days">7 Days</TabsTrigger>
-        <TabsTrigger value="24-hrs">24 Hours</TabsTrigger>
+        <TabsTrigger value="12m">12 Months</TabsTrigger>
+        <TabsTrigger value="30d">30 Days</TabsTrigger>
+        <TabsTrigger value="7d">7 Days</TabsTrigger>
+        <TabsTrigger value="24h">24 Hours</TabsTrigger>
       </TabsList>
     </Tabs>
   );

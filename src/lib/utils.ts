@@ -61,6 +61,13 @@ export function formatToHMS(totalSeconds: number): string {
   return `${hours}H:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+export function formatToYearMonth(dateString: string): string {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 //   interface MyTokenPayload {
 //     userId: string;
 //     email: string;

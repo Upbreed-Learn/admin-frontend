@@ -164,3 +164,23 @@ export interface DashboardDataType {
     naira: number;
   }[];
 }
+
+export interface FinanceDataType {
+  currentMonthRevenue: {
+    usd: number;
+    naira: number;
+  };
+  currentYearRevenue: {
+    usd: number;
+    naira: number;
+  };
+  totalRevenue: {
+    usd: number;
+    naira: number;
+  };
+  revenueHistory: {
+    timestamp: string;
+    usd: number;
+    naira: number;
+  }[];
+}
