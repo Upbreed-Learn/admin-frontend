@@ -6,7 +6,6 @@ import type {
   VideosType,
 } from '@/lib/constants';
 import { https } from '@/lib/https';
-import { get } from 'react-hook-form';
 
 const LIMIT = 9;
 
