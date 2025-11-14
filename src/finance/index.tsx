@@ -5,8 +5,8 @@ import { ArrowLeftRight } from 'lucide-react';
 import MoreTransactionHistoryModal from './more-transaction-history-modal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERIES } from '@/queries';
-import type { FinanceDataType } from '@/lib/constants';
-import { formatNumber, formatToYearMonth } from '@/lib/utils';
+import type { FinanceDataType, TransactionHistoryType } from '@/lib/constants';
+import { formatNumber, formatToYearMonth, formatTrxnDate } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { TotalRevenueError, TotalRevenueSkeleton } from '@/dashboard';
 
@@ -14,6 +14,13 @@ const useGetFinanceData = (period?: '24h' | '7d' | '30d' | '12m') => {
   return useQuery({
     queryKey: ['financeData', { period }],
     queryFn: () => QUERIES.getFinanceData(period),
+  });
+};
+
+const useGetTransactionHistory = () => {
+  return useQuery({
+    queryKey: ['transactionHistory'],
+    queryFn: () => QUERIES.getTransactionHistory(),
   });
 };
 
@@ -112,32 +119,29 @@ export default Finance;
 
 const TransactionHistory = () => {
   const [_, setViewMore] = useQueryState('viewMore');
+  const { data, isPending, isError } = useGetTransactionHistory();
+
+  const transactionHistory: TransactionHistoryType[] = data?.data;
 
   return (
     <>
-      <MoreTransactionHistoryModal />
+      <MoreTransactionHistoryModal history={transactionHistory} />
       <div className="flex flex-1/3 flex-col gap-7 rounded bg-[#E3E3E333] p-3.5">
         <div className="flex items-center justify-between">
           <p className="font-semibold">Transaction History</p>
-          {/* <div className={cn('relative w-full max-w-20')}>
-            <Input
-              type="search"
-              placeholder="Search"
-              className="rounded-[1.25rem] pl-4 text-xs/[100%] placeholder:text-[5px]/[100%]"
-            />
-            <Search
-              className="absolute top-3.5 left-1.5 -translate-y-1/2"
-              size={6}
-            />
-          </div> */}
         </div>
         <div className="flex flex-col gap-3">
-          {Array(7)
-            .fill(null)
-            .map((_, i) => (
-              <HistoryCard key={i} />
-            ))}
-
+          {isError ? (
+            <HistoryListError />
+          ) : isPending ? (
+            Array(7)
+              .fill(null)
+              .map((_, i) => <HistoryCardSkeleton key={i} />)
+          ) : (
+            transactionHistory
+              .slice(0, 7)
+              .map(history => <HistoryCard key={history.id} {...history} />)
+          )}
           <Button
             onClick={() => setViewMore('true')}
             className="cursor-pointer self-end bg-transparent text-[8px]/[100%] font-semibold text-[#949494] underline hover:bg-transparent"
@@ -150,17 +154,23 @@ const TransactionHistory = () => {
   );
 };
 
-const HistoryCard = () => {
+const HistoryCard = (props: TransactionHistoryType) => {
+  const [currency, _] = useQueryState('currency', {
+    defaultValue: 'NGN',
+  });
+
   return (
     <div className="flex justify-between border-b border-[#00000026] pb-0.5">
       <div>
         <p className="text-sm/[100%] font-medium">Chinedu Asake</p>
         <p className="text-xs/[100%] font-medium text-[#9B9B9B]">
-          16 - Nov - 2024
+          {formatTrxnDate(props.createdAt)}
         </p>
       </div>
-      <p className="text-xs/[100%] font-medium">Bank Transfer</p>
-      <p className="text-sm/[100%] font-medium">$120</p>
+      <p className="text-xs/[100%] font-medium">{props.provider}</p>
+      <p className="text-sm/[100%] font-medium">
+        {currency === 'NGN' ? `₦${props.amountNaira}` : `$${props.amountUsd}`}
+      </p>
     </div>
   );
 };
@@ -248,3 +258,82 @@ const FinanceStatsError = ({
     </div>
   );
 };
+
+const HistoryCardSkeleton = () => (
+  <div
+    className="flex animate-pulse justify-between border-b border-[#00000026] pb-0.5"
+    role="status"
+    aria-label="loading transaction"
+  >
+    <div>
+      <div className="h-3 w-28 rounded bg-[#E6EFE6]" />
+      <div className="mt-1 h-3 w-20 rounded bg-[#E6EFE6]" />
+    </div>
+    <div className="h-3 w-24 rounded bg-[#E6EFE6]" />
+    <div className="h-3 w-12 rounded bg-[#E6EFE6]" />
+  </div>
+);
+
+const HistoryListError = ({
+  message,
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) => (
+  <div
+    className="flex flex-col gap-3 rounded bg-[#FFF5F5] px-3 py-4 text-sm"
+    role="alert"
+    aria-label="transaction history error"
+  >
+    <div className="flex items-center gap-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFEAEA]">
+        <svg
+          className="h-4 w-4 text-[#D14343]"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden
+        >
+          <path
+            d="M12 9v4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M12 17h.01"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <div>
+        <p className="font-semibold text-[#D14343]">
+          Unable to load transactions
+        </p>
+        <p className="text-xs text-[#6B6B6B]">
+          {message ??
+            'Something went wrong while fetching transaction history.'}
+        </p>
+      </div>
+    </div>
+
+    <div className="flex gap-2">
+      <button
+        onClick={onRetry ?? (() => window.location.reload())}
+        className="rounded bg-[#D14343] px-3 py-1 text-sm font-semibold text-white"
+      >
+        Retry
+      </button>
+      <button
+        onClick={() => window.location.reload()}
+        className="rounded border border-[#E6E6E6] bg-transparent px-3 py-1 font-semibold text-[#305B43]"
+      >
+        Reload
+      </button>
+    </div>
+  </div>
+);
