@@ -179,4 +179,9 @@ export const QUERIES = {
 
     return await https.get(url);
   },
+  getTransactionHistory: async function () {
+    const url = '/payment/history';
+
+    return await https.get(url);
+  },
 };

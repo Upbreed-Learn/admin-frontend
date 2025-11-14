@@ -6,10 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import type { TransactionHistoryType } from '@/lib/constants';
+import { formatTrxnDate } from '@/lib/utils';
 import { Upload } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 
-const MoreTransactionHistoryModal = () => {
+const MoreTransactionHistoryModal = (props: {
+  history: TransactionHistoryType[];
+}) => {
+  const { history } = props;
   const [viewMore, setViewMore] = useQueryState('viewMore');
 
   return (
@@ -32,11 +37,9 @@ const MoreTransactionHistoryModal = () => {
           </div>
         </div>
         <div className="_hide-scrollbar flex h-full max-h-[calc(32.875rem-5rem)] flex-col gap-[1.125rem] overflow-auto">
-          {Array(91)
-            .fill(null)
-            .map((_, i) => (
-              <HistoryCard key={i} />
-            ))}
+          {history.map(history => (
+            <HistoryCard key={history.id} {...history} />
+          ))}
         </div>
       </DialogContent>
     </Dialog>
@@ -45,17 +48,23 @@ const MoreTransactionHistoryModal = () => {
 
 export default MoreTransactionHistoryModal;
 
-const HistoryCard = () => {
+const HistoryCard = (props: TransactionHistoryType) => {
+  const [currency, _] = useQueryState('currency', {
+    defaultValue: 'NGN',
+  });
+
   return (
     <div className="flex justify-between border-b border-[#00000026] pb-0.5">
       <div>
         <p className="text-[13.7px]/[100%] font-medium">Chinedu Asake</p>
         <p className="text-[11.41px]/[100%] font-medium text-[#9B9B9B]">
-          16 - Nov - 2024
+          {formatTrxnDate(props.createdAt)}
         </p>
       </div>
-      <p className="text-xs/[100%] font-medium">Bank Transfer</p>
-      <p className="text-xs/[100%] font-medium">$120</p>
+      <p className="text-xs/[100%] font-medium">{props.provider}</p>
+      <p className="text-xs/[100%] font-medium">
+        {currency === 'NGN' ? `₦${props.amountNaira}` : `$${props.amountUsd}`}
+      </p>
     </div>
   );
 };
