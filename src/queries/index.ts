@@ -102,6 +102,7 @@ export const QUERIES = {
     page?: number,
     limit?: number,
     search?: string,
+    includeInactive?: boolean,
   ) {
     limit = limit || LIMIT;
     const params = new URLSearchParams();
@@ -109,6 +110,7 @@ export const QUERIES = {
     if (page) params.append('page', `${page}`);
     if (limit) params.append('limit', `${limit}`);
     if (search) params.append('query', `${search}`);
+    if (includeInactive) params.append('includeInactive', `${includeInactive}`);
 
     const queryString = params.toString();
     const url =

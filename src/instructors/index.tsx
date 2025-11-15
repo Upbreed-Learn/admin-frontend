@@ -26,16 +26,19 @@ export const useGetInstructors = (
   page?: number,
   limit?: number,
   search?: string,
+  includeInactive?: boolean,
 ) => {
   return useQueries({
     queries: [
       {
-        queryKey: ['instructors', { page, limit }],
-        queryFn: () => QUERIES.getInstructors(page, limit),
+        queryKey: ['instructors', { page, limit, includeInactive }],
+        queryFn: () =>
+          QUERIES.getInstructors(page, limit, undefined, includeInactive),
       },
       {
-        queryKey: ['instructors', { page, limit, search }],
-        queryFn: () => QUERIES.getInstructors(page, limit, search),
+        queryKey: ['instructors', { page, limit, search, includeInactive }],
+        queryFn: () =>
+          QUERIES.getInstructors(page, limit, search, includeInactive),
         enabled: !!search,
       },
     ],
@@ -52,6 +55,7 @@ const Instructors = () => {
     page,
     20,
     debouncedSearch,
+    true,
   );
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -194,15 +198,6 @@ const InstructorCard = (props: InstructorDetailsType) => {
               <span className="text-sm/4 font-extrabold capitalize">{`${fname} ${lname}`}</span>
               <span className="text-xs/4 font-medium">{email}</span>
             </span>
-
-            {/* <span
-                role="button"
-                aria-label="delete-button"
-                onClick={handledelete}
-                className="cursor-pointer"
-              >
-                <Trash2 size={16} className="text-destructive" />
-              </span> */}
           </div>
         </AccordionTrigger>
         <AccordionContent className="text-xs/[100%] font-medium">
