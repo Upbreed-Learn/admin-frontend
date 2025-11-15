@@ -35,11 +35,17 @@ const DeleteDialog = (props: {
     mutationFn: (data: { id: number }) => deleteFn(data.id),
     errorToast: {
       title: 'Error',
-      description: 'Failed to delete',
+      description:
+        whatToDelete === 'instructor'
+          ? 'Failed to deactivate instructor'
+          : 'Failed to delete',
     },
     successToast: {
       title: 'Success',
-      description: 'Deleted successfully',
+      description:
+        whatToDelete === 'instructor'
+          ? 'Instructor Deactivated'
+          : 'Deleted successfully',
     },
     onSuccessCallback: () => {
       queryClient.invalidateQueries({
@@ -62,14 +68,21 @@ const DeleteDialog = (props: {
     <Dialog open={deleteInstructor} onOpenChange={setDelete}>
       <DialogContent className="border-destructive flex flex-col gap-8 border">
         <DialogHeader className="sr-only">
-          <DialogTitle>Delete {whatToDelete}</DialogTitle>
+          <DialogTitle>
+            {whatToDelete === 'instructor' ? 'Deactivate' : 'Delete'}{' '}
+            {whatToDelete}
+          </DialogTitle>
           <DialogDescription>
-            Confirm that you want to delete this {whatToDelete}.
+            Confirm that you want to{' '}
+            {whatToDelete === 'instructor' ? 'deactivate' : 'delete'} this{' '}
+            {whatToDelete}.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-7">
           <p className="text-destructive text-center text-xs/4 font-semibold">
-            Are you sure you want to delete this {whatToDelete}?
+            Are you sure you want to{' '}
+            {whatToDelete === 'instructor' ? 'deactivate' : 'delete'} this{' '}
+            {whatToDelete}?
           </p>
           <div className="flex justify-center gap-3">
             <Button
@@ -79,7 +92,13 @@ const DeleteDialog = (props: {
                 'bg-destructive hover:bg-destructive/80 cursor-pointer text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50'
               }
             >
-              {isPending ? 'Deleting...' : 'Delete'}
+              {isPending
+                ? whatToDelete === 'instructor'
+                  ? 'Deactivating...'
+                  : 'Deleting...'
+                : whatToDelete === 'instructor'
+                  ? 'Deactivate'
+                  : 'Delete'}
             </Button>
             <DialogClose asChild>
               <Button className="cursor-pointer bg-transparent text-[#9C9C9C] hover:bg-transparent">

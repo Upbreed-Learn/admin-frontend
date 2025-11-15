@@ -186,37 +186,11 @@ export interface FinanceDataType {
 }
 
 export interface TransactionHistoryType {
-  id: string;
-  amountUsd: string;
-  amountNaira: string;
-  exchangeRate: string;
-  currency: string;
-  provider: string;
-  status: string;
-  reference: string;
-  providerReference: string;
-  providerResponse: string | null;
-  subscriptionMetadata: {
-    planName: string;
-    amountUsd: string;
-    noDevices: number;
-    amountNaira: string;
-    durationDays: number;
+  userName: string;
+  transactionDate: string;
+  paymentGateway: string;
+  amount: {
+    usd: number;
+    naira: number;
   };
-  failureReason: string | null;
-  paidAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  subscriptionPlan: {
-    id: number;
-    name: string;
-    durationDays: number;
-    noDevices: number;
-    amountUsd: string;
-    amountNaira: string;
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string | null;
-  };
-  userSubscription: string | null;
 }

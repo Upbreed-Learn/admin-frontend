@@ -9,6 +9,7 @@ import type { FinanceDataType, TransactionHistoryType } from '@/lib/constants';
 import { formatNumber, formatToYearMonth, formatTrxnDate } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { TotalRevenueError, TotalRevenueSkeleton } from '@/dashboard';
+import { useState } from 'react';
 
 const useGetFinanceData = (period?: '24h' | '7d' | '30d' | '12m') => {
   return useQuery({
@@ -17,10 +18,14 @@ const useGetFinanceData = (period?: '24h' | '7d' | '30d' | '12m') => {
   });
 };
 
-const useGetTransactionHistory = () => {
+export const useGetTransactionHistory = (
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
   return useQuery({
-    queryKey: ['transactionHistory'],
-    queryFn: () => QUERIES.getTransactionHistory(),
+    queryKey: ['transactionHistory', { page, limit, search }],
+    queryFn: () => QUERIES.getTransactionHistory(page, limit, search),
   });
 };
 
@@ -118,14 +123,15 @@ const Finance = () => {
 export default Finance;
 
 const TransactionHistory = () => {
+  const [page] = useState(1);
   const [_, setViewMore] = useQueryState('viewMore');
-  const { data, isPending, isError } = useGetTransactionHistory();
+  const { data, isPending, isError } = useGetTransactionHistory(page, 7);
 
-  const transactionHistory: TransactionHistoryType[] = data?.data;
+  const transactionHistory: TransactionHistoryType[] = data?.data.data;
 
   return (
     <>
-      <MoreTransactionHistoryModal history={transactionHistory} />
+      <MoreTransactionHistoryModal />
       <div className="flex flex-1/3 flex-col gap-7 rounded bg-[#E3E3E333] p-3.5">
         <div className="flex items-center justify-between">
           <p className="font-semibold">Transaction History</p>
@@ -138,9 +144,9 @@ const TransactionHistory = () => {
               .fill(null)
               .map((_, i) => <HistoryCardSkeleton key={i} />)
           ) : (
-            transactionHistory
-              .slice(0, 7)
-              .map(history => <HistoryCard key={history.id} {...history} />)
+            transactionHistory.map(history => (
+              <HistoryCard key={history.transactionDate} {...history} />
+            ))
           )}
           <Button
             onClick={() => setViewMore('true')}
@@ -162,14 +168,14 @@ const HistoryCard = (props: TransactionHistoryType) => {
   return (
     <div className="flex justify-between border-b border-[#00000026] pb-0.5">
       <div>
-        <p className="text-sm/[100%] font-medium">Chinedu Asake</p>
+        <p className="text-sm/[100%] font-medium">{props.userName}</p>
         <p className="text-xs/[100%] font-medium text-[#9B9B9B]">
-          {formatTrxnDate(props.createdAt)}
+          {formatTrxnDate(props.transactionDate)}
         </p>
       </div>
-      <p className="text-xs/[100%] font-medium">{props.provider}</p>
+      <p className="text-xs/[100%] font-medium">{props.paymentGateway}</p>
       <p className="text-sm/[100%] font-medium">
-        {currency === 'NGN' ? `₦${props.amountNaira}` : `$${props.amountUsd}`}
+        {currency === 'NGN' ? `₦${props.amount.naira}` : `$${props.amount.usd}`}
       </p>
     </div>
   );
@@ -259,7 +265,7 @@ const FinanceStatsError = ({
   );
 };
 
-const HistoryCardSkeleton = () => (
+export const HistoryCardSkeleton = () => (
   <div
     className="flex animate-pulse justify-between border-b border-[#00000026] pb-0.5"
     role="status"
@@ -274,7 +280,7 @@ const HistoryCardSkeleton = () => (
   </div>
 );
 
-const HistoryListError = ({
+export const HistoryListError = ({
   message,
   onRetry,
 }: {

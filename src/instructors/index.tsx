@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import AvatarCustom from '@/components/ui/custom/avatar';
 import { SearchInput } from '@/components/ui/custom/input';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 import { useQueries } from '@tanstack/react-query';
 import { MUTATIONS, QUERIES } from '@/queries';
@@ -20,6 +20,7 @@ import EmptyState from '@/components/empty';
 import InstructorSetupDialog from './instructor-setup-dialog';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import DeleteDialog from '@/components/delete-dialog';
+import { Switch } from '@/components/ui/switch';
 
 export const useGetInstructors = (
   page?: number,
@@ -84,7 +85,8 @@ const Instructors = () => {
           </Button>
           <SearchInput value={search} onChange={e => handleChange(e)} />
         </div>
-        {allInstructors.isError || searchedInstructors.isError ? (
+        {allInstructors.isError ||
+        (search !== '' && searchedInstructors.isError) ? (
           <ErrorState />
         ) : (
           <Accordion
@@ -92,7 +94,8 @@ const Instructors = () => {
             collapsible
             className="flex h-full max-h-[33rem] flex-col gap-2 overflow-auto rounded-[10px] bg-[#00230F] px-11 py-6 text-white"
           >
-            {allInstructors.isPending ? (
+            {allInstructors.isPending ||
+            (search !== '' && searchedInstructors.isPending) ? (
               Array(8)
                 .fill(null)
                 .map((_, i) => <InstructorTriggerSkeleton key={i} />)
@@ -139,7 +142,7 @@ const Instructors = () => {
 export default Instructors;
 
 const InstructorCard = (props: InstructorDetailsType) => {
-  const { id, fname, lname, email, instructorProfile } = props;
+  const { id, fname, lname, email, instructorProfile, isActive } = props;
   const [_, setInstructor] = useQueryState('id');
   const [__, setAddInstructor] = useQueryState('instructorSetup');
   const [deleteInstructor, setDeleteInstructor] = useState(false);
@@ -169,32 +172,37 @@ const InstructorCard = (props: InstructorDetailsType) => {
       />
       <AccordionItem
         value={`item-${id}`}
-        className="basis-full border-b-[0.85px] border-[#FFFFFF4D]"
+        className="group relative basis-full border-b-[0.85px] border-[#FFFFFF4D]"
       >
-        <AccordionTrigger className="group hover:no-underline [&>svg]:text-white">
+        <div className="_pointer-events-none absolute top-4 right-8 flex gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+          <button
+            aria-label="edit-button"
+            onClick={handleEdit}
+            className="cursor-pointer"
+          >
+            <Edit size={16} />
+          </button>
+          <Switch
+            id="isActive"
+            checked={isActive}
+            onCheckedChange={handledelete}
+          />
+        </div>
+        <AccordionTrigger className="hover:no-underline [&>svg]:text-white">
           <div className="flex basis-full items-center justify-between">
             <span className="flex items-center gap-[10px]">
               <span className="text-sm/4 font-extrabold capitalize">{`${fname} ${lname}`}</span>
               <span className="text-xs/4 font-medium">{email}</span>
             </span>
-            <span className="pointer-events-none flex gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
-              <span
-                role="button"
-                aria-label="edit-button"
-                onClick={handleEdit}
-                className="cursor-pointer"
-              >
-                <Edit size={16} />
-              </span>
-              <span
+
+            {/* <span
                 role="button"
                 aria-label="delete-button"
                 onClick={handledelete}
                 className="cursor-pointer"
               >
                 <Trash2 size={16} className="text-destructive" />
-              </span>
-            </span>
+              </span> */}
           </div>
         </AccordionTrigger>
         <AccordionContent className="text-xs/[100%] font-medium">
