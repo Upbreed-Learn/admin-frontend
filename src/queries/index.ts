@@ -70,6 +70,13 @@ export const MUTATIONS = {
       },
     });
   },
+  uploadImage: async function (data: { image: File }) {
+    return await https.post('/admin/upload-image', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 export const QUERIES = {
@@ -179,8 +186,20 @@ export const QUERIES = {
 
     return await https.get(url);
   },
-  getTransactionHistory: async function () {
-    const url = '/payment/history';
+  getTransactionHistory: async function (
+    page?: number,
+    limit?: number,
+    search?: string,
+  ) {
+    const defaultLimit = limit || LIMIT;
+    const params = new URLSearchParams();
+
+    if (page) params.append('page', `${page}`);
+    if (defaultLimit) params.append('limit', `${defaultLimit}`);
+    if (search) params.append('search', `${search}`);
+    const queryString = params.toString();
+
+    const url = `/admin/payments?${queryString}`;
 
     return await https.get(url);
   },

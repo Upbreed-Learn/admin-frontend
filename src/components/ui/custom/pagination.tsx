@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   Pagination,
   PaginationContent,
+  // PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -86,6 +87,12 @@ const PaginationSection = (props: {
             );
           })}
         </span>
+        {/* <PaginationItem>
+          <PaginationLink href="#">1</PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationEllipsis />
+        </PaginationItem> */}
         <PaginationItem>
           <PaginationNext
             onClick={handleNextPage}

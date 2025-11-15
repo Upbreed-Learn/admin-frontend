@@ -46,11 +46,11 @@ const Projects = () => {
   const queryClient = useQueryClient();
 
   const { data, isPending, isError } = useGetCourses(page);
-  const { data: searchedCoursesData } = useGetSearchedCourses(
-    page,
-    20,
-    debouncedSearch,
-  );
+  const {
+    data: searchedCoursesData,
+    isPending: isSearching,
+    isError: isSearchError,
+  } = useGetSearchedCourses(page, 20, debouncedSearch);
 
   const projectData: CourseDetailsType[] = data?.data?.data;
   const searchedCourses: CourseDetailsType[] = searchedCoursesData?.data?.data;
@@ -115,7 +115,7 @@ const Projects = () => {
             </div>
           </div>
         </div>
-        {isError ? (
+        {isError || (search !== '' && isSearchError) ? (
           <ErrorState
             onRetry={() =>
               queryClient.invalidateQueries({ queryKey: ['courses'] })
@@ -124,7 +124,7 @@ const Projects = () => {
         ) : (
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-3 gap-5">
-              {isPending ? (
+              {isPending || (search !== '' && isSearching) ? (
                 Array(9)
                   .fill(null)
                   .map((_, i) => <ProjectCardSkeleton key={i} />)

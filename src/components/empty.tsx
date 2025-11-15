@@ -7,11 +7,13 @@ const EmptyState = ({
   title = 'Add your first course to get started.',
   description = 'Add your first course to get started.',
   cta = 'Add New Course',
+  removeCTA,
   className,
 }: {
-  onAdd: () => void;
+  onAdd?: () => void;
   title?: string;
   description?: string;
+  removeCTA?: boolean;
   className?: string;
   cta?: string;
 }) => {
@@ -37,11 +39,13 @@ const EmptyState = ({
         />
       </svg>
       <p className="text-sm font-semibold text-[#305B43]">{title}</p>
-      <p className="text-xs text-[#6B6B6B]">{description}</p>
-      <Button onClick={onAdd} className="mt-2 cursor-pointer">
-        <Plus />
-        {cta}
-      </Button>
+      {description && <p className="text-xs text-[#6B6B6B]">{description}</p>}
+      {!removeCTA && (
+        <Button onClick={onAdd} className="mt-2 cursor-pointer">
+          <Plus />
+          {cta}
+        </Button>
+      )}
     </div>
   );
 };

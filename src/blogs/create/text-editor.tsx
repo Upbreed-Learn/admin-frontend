@@ -12,6 +12,9 @@ import type { UseFormReturn } from 'react-hook-form';
 import type z from 'zod';
 import type { formSchema } from '.';
 import type { BlogDetailsType } from '@/lib/constants';
+import { MUTATIONS } from '@/queries';
+import useSendRequest from '@/lib/hooks/useSendRequest';
+import { toast } from 'sonner';
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -20,6 +23,21 @@ interface EditorToolbarProps {
 const EditorToolbar = ({ editor }: EditorToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setUpdateTrigger] = useState(0);
+
+  const { mutate, isPending } = useSendRequest<
+    { image: File },
+    { data: { url: string } }
+  >({
+    mutationFn: (data: { image: File }) => MUTATIONS.uploadImage(data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to upload image',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Image uploaded successfully',
+    },
+  });
 
   useEffect(() => {
     if (!editor) return;
@@ -45,21 +63,31 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
     fileInputRef.current?.click();
   };
 
+  useEffect(() => {
+    if (isPending) {
+      toast.success(`Upload Message`, {
+        description: `Uploading image...`,
+        className:
+          '!bg-[#FFFCF5] !border !border-[#FEC84B] !shadow-[0px_1px_2px_0px_#1018280D] [&_div]:!text-[#B54708] [&>div>div]:last:!font-light !text-sm !leading-5',
+      });
+    }
+  }, [isPending]);
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const fileReader = new FileReader();
 
-    fileReader.readAsDataURL(file);
-    fileReader.onload = () => {
-      editor
-        .chain()
-        .focus()
-        .setImage({ src: fileReader.result as string })
-        .run();
-    };
+    mutate(
+      { image: file },
+      {
+        onSuccess: data => {
+          // data.url is the URL returned from your backend
+          editor.chain().focus().setImage({ src: data.data.url }).run();
+        },
+      },
+    );
 
     // Reset input so the same file can be selected again
     event.target.value = '';
@@ -146,6 +174,31 @@ const Tiptap = (props: {
 }) => {
   const { form, blogDetailsData } = props;
 
+  const { mutate, isPending } = useSendRequest<
+    { image: File },
+    { data: { url: string } }
+  >({
+    mutationFn: (data: { image: File }) => MUTATIONS.uploadImage(data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to upload image',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Image uploaded successfully',
+    },
+  });
+
+  useEffect(() => {
+    if (isPending) {
+      toast.success(`Upload Message`, {
+        description: `Uploading image...`,
+        className:
+          '!bg-[#FFFCF5] !border !border-[#FEC84B] !shadow-[0px_1px_2px_0px_#1018280D] [&_div]:!text-[#B54708] [&>div>div]:last:!font-light !text-sm !leading-5',
+      });
+    }
+  }, [isPending]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -172,21 +225,26 @@ const Tiptap = (props: {
         ],
         onDrop: (currentEditor, files, pos) => {
           files.forEach(file => {
-            const fileReader = new FileReader();
-
-            fileReader.readAsDataURL(file);
-            fileReader.onload = () => {
-              currentEditor
-                .chain()
-                .insertContentAt(pos, {
-                  type: 'image',
-                  attrs: {
-                    src: fileReader.result,
-                  },
-                })
-                .focus()
-                .run();
-            };
+            mutate(
+              { image: file },
+              {
+                onSuccess: data => {
+                  // data.url is the URL returned from your backend
+                  {
+                    currentEditor
+                      .chain()
+                      .insertContentAt(pos, {
+                        type: 'image',
+                        attrs: {
+                          src: data.data.url,
+                        },
+                      })
+                      .focus()
+                      .run();
+                  }
+                },
+              },
+            );
           });
         },
 
@@ -199,21 +257,26 @@ const Tiptap = (props: {
               return false;
             }
 
-            const fileReader = new FileReader();
-
-            fileReader.readAsDataURL(file);
-            fileReader.onload = () => {
-              currentEditor
-                .chain()
-                .insertContentAt(currentEditor.state.selection.anchor, {
-                  type: 'image',
-                  attrs: {
-                    src: fileReader.result,
-                  },
-                })
-                .focus()
-                .run();
-            };
+            mutate(
+              { image: file },
+              {
+                onSuccess: data => {
+                  // data.url is the URL returned from your backend
+                  {
+                    currentEditor
+                      .chain()
+                      .insertContentAt(currentEditor.state.selection.anchor, {
+                        type: 'image',
+                        attrs: {
+                          src: data.data.url,
+                        },
+                      })
+                      .focus()
+                      .run();
+                  }
+                },
+              },
+            );
           });
         },
       }),

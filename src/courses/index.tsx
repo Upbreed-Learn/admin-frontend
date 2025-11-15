@@ -23,11 +23,11 @@ const Courses = () => {
   };
 
   const { data, isPending, isError } = useGetCourses(page);
-  const { data: searchedCoursesData } = useGetSearchedCourses(
-    page,
-    20,
-    debouncedSearch,
-  );
+  const {
+    data: searchedCoursesData,
+    isPending: isSearching,
+    isError: isSearchError,
+  } = useGetSearchedCourses(page, 20, debouncedSearch);
   const searchedCourses: CourseDetailsType[] = searchedCoursesData?.data?.data;
 
   const queryClient = useQueryClient();
@@ -76,13 +76,13 @@ const Courses = () => {
           <MoreVertical />
         </ExportDropdown>
         <div className="bg-[#A1A1A10F]">
-          {isError ? (
+          {isError || (search !== '' && isSearchError) ? (
             <ErrorState
               onRetry={() =>
                 queryClient.invalidateQueries({ queryKey: ['courses'] })
               }
             />
-          ) : isPending ? (
+          ) : isPending || (search !== '' && isSearching) ? (
             <DataTable data={dataSkeleton} columns={CourseColumnsSkeleton} />
           ) : (
             <DataTable data={activeList} columns={CourseColumns} />
