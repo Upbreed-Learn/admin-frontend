@@ -38,7 +38,7 @@ const Instructors = () => {
         to={'/courses'}
         className="text-center text-[8px]/[100%] font-semibold text-[#949494] underline"
       >
-        Read more...
+        <span className="absolute inset-0"></span>
       </Link>
     </div>
   );
