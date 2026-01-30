@@ -77,6 +77,7 @@ export type CourseDetailsType = {
     fname: string;
     lname: string;
   };
+  isHomepage: boolean;
   categories: {
     id: number;
     name: string;
@@ -102,6 +103,7 @@ export type EditCourseType = {
   description: string;
   image?: File;
   categories: number[];
+  isHomepage?: boolean;
 };
 
 export type VideosType = {

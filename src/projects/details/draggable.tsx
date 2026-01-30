@@ -29,6 +29,8 @@ import TextInput from '@/components/ui/custom/input';
 import type z from 'zod';
 import type { FormSchema } from '.';
 
+const libraryId = '515933';
+
 export function DraggableSections(props: {
   form: UseFormReturn<z.infer<typeof FormSchema>>;
   fields: Record<'id', string>[];
@@ -90,6 +92,8 @@ function SortableItem(props: {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const bunnyVideoId = form.watch(`videos.${index}.bunnyVideoId`);
 
   return (
     <fieldset
@@ -153,18 +157,22 @@ function SortableItem(props: {
         </fieldset>
       </fieldset>
 
+      {bunnyVideoId && (
+        <div className="relative h-[163px] w-72 overflow-hidden rounded bg-black/8">
+          <iframe
+            src={`https://iframe.mediadelivery.net/embed/${libraryId}/${bunnyVideoId}`}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full border-0 object-center"
+          />
+        </div>
+      )}
+
       <fieldset className="flex gap-6">
-        {/* <div
-          className="flex !w-40 flex-col items-center justify-center gap-1.5 overflow-hidden rounded bg-[#D9D9D9]"
-          onClick={() => {
-            // trigger upload logic here
-          }}
-        >
-          <UploadVideo />
-          <p className="text-[7px]/[100%] text-[#949494]">Upload Video</p>
-        </div> */}
         <div
-          className={cn('flex items-center gap-5', index + 1 === 1 && 'hidden')}
+          className={cn(
+            'flex flex-col-reverse items-center justify-center gap-5',
+            index + 1 === 1 && 'hidden',
+          )}
         >
           <button type="button" onClick={onDelete}>
             <Trash2Icon className="text-[#9B9B9B]" />
