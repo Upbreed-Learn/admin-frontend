@@ -46,6 +46,7 @@ const Courses = () => {
     dataSkeleton.push({
       thumbnail: 'https://i.pravatar.cc/150?img=1',
       title: 'Selling Anything',
+      isHomepage: false,
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl eget ultrices ultricies, nunc nulla ultricies nisi, euismod ultrices nisl.',
       instructor: {

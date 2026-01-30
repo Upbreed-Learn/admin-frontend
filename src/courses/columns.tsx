@@ -3,10 +3,15 @@ import DurationIcon from '@/assets/jsx-icons/duration-icon';
 import InstructorIcon from '@/assets/jsx-icons/instructor-icon';
 import LessonsIcon from '@/assets/jsx-icons/lessons-icon';
 import ViewsIcon from '@/assets/jsx-icons/views-icon';
+import { Checkbox } from '@/components/ui/checkbox';
 import AvatarCustom from '@/components/ui/custom/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CourseDetailsType } from '@/lib/constants';
+import type { CourseDetailsType, EditCourseType } from '@/lib/constants';
+import useSendRequest from '@/lib/hooks/useSendRequest';
 import { formatToHMS } from '@/lib/utils';
+import { MUTATIONS } from '@/queries';
+import { useGetCourse } from '@/queries/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 
 // export interface CoursesType {
@@ -91,6 +96,62 @@ export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
         </span>
       </div>
     ),
+  },
+  {
+    id: 'select',
+    accessorKey: 'name',
+    header: () => (
+      <div className="flex items-center justify-center gap-1">
+        <LessonsIcon />
+        <span className="text-[10px] font-semibold text-[#737373]">
+          Home Page
+        </span>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const queryClient = useQueryClient();
+      const { data } = useGetCourse(row.original.id!!);
+      const courseData: CourseDetailsType = data?.data?.data;
+
+      const { mutate, isPending } = useSendRequest<EditCourseType, any>({
+        mutationFn: (data: EditCourseType) =>
+          MUTATIONS.editProject(+row.original.id!!, data),
+        errorToast: {
+          title: 'Error',
+          description: 'Failed to update course',
+        },
+        successToast: {
+          title: 'Success',
+          description: 'Course updated successfully',
+        },
+        onSuccessCallback: () => {
+          queryClient.invalidateQueries({
+            queryKey: ['courses', { id: row.original.id }],
+          });
+        },
+      });
+
+      return (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={
+              isPending ? !courseData?.isHomepage : courseData?.isHomepage
+            }
+            onCheckedChange={value => (
+              row.toggleSelected(!!value),
+              mutate({
+                title: courseData?.title,
+                description: courseData?.description,
+                categories: courseData?.categories.map(cat => +cat.id),
+                isHomepage: value as boolean,
+              })
+            )}
+            className="z-10 size-5 rounded-[6px] border border-black/8 bg-white shadow-none data-[state=checked]:border-[#D0EA50] data-[state=checked]:bg-[#D0EA50] data-[state=indeterminate]:border-[#6155F5] [&>span>svg]:text-[#00230F]"
+            aria-label="Select row"
+          />
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'views',

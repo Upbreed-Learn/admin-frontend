@@ -259,11 +259,11 @@ const InstructorDetails = (props: {
     mutationFn: (data: EditCourseType) => MUTATIONS.editProject(+id!!, data),
     errorToast: {
       title: 'Error',
-      description: 'Failed to add course',
+      description: 'Failed to update course',
     },
     successToast: {
       title: 'Success',
-      description: 'Course added successfully',
+      description: 'Course updated successfully',
     },
     onSuccessCallback: () => {
       queryClient.invalidateQueries({ queryKey: ['course'] });
