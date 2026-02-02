@@ -24,6 +24,10 @@ const ROUTES = [
     label: 'Courses',
   },
   {
+    path: '/categories',
+    label: '+ Categories',
+  },
+  {
     path: '/finance',
     label: 'Finance',
   },
@@ -60,6 +64,11 @@ const Sidebar = () => {
                 cn(
                   'group flex items-center gap-4 rounded-lg px-6 py-2 text-xs/[100%] font-semibold transition-colors hover:bg-white hover:text-[#737373]',
                   isActive ? 'bg-white text-[#737373]' : 'bg-none text-white',
+                  route.path === '/categories' &&
+                    'self-end hover:bg-transparent hover:text-[#D0EA50]',
+                  isActive &&
+                    route.path === '/categories' &&
+                    'bg-transparent text-[#D0EA50] hover:bg-none',
                 )
               }
             >

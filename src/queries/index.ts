@@ -77,6 +77,26 @@ export const MUTATIONS = {
       },
     });
   },
+  createCategory: async function (data: { name: string; icon?: File[] }) {
+    return await https.post(`/category`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  editCategory: async function (
+    data: { name: string; icon?: File[] },
+    id: number,
+  ) {
+    return await https.patch(`/category/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  deleteCategory: async function (id: number) {
+    return await https.delete(`/category/${id}`);
+  },
 };
 
 export const QUERIES = {

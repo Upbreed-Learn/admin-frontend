@@ -14,6 +14,7 @@ import CreateBlog from './blogs/create';
 import Login from './auth';
 import { checkAuthLoader } from './lib/utils';
 import ErrorPage from './ErrorPage';
+import Categories from './categories';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: '/courses',
         element: <Courses />,
+      },
+      {
+        path: '/categories',
+        element: <Categories />,
       },
       {
         path: '/finance',
