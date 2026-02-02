@@ -17,7 +17,7 @@ export const useGetInstructors = (page?: number, limit?: number) => {
 
 export const useGetCategories = (page?: number, limit?: number) => {
   return useQuery({
-    queryKey: ['categories'],
+    queryKey: ['categories', { page, limit }],
     queryFn: () => QUERIES.getCategories(page, limit),
   });
 };

@@ -66,6 +66,7 @@ export interface CourseType {
 export type CategoryType = {
   id: string;
   name: string;
+  icon: string;
 };
 
 export type CourseDetailsType = {
