@@ -12,6 +12,8 @@ import { MUTATIONS } from '@/queries';
 import { Toaster } from 'sonner';
 import useSendRequest from '@/lib/hooks/useSendRequest';
 import { useNavigate } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 const formSchema = z.object({
   email: z.email({
@@ -22,9 +24,22 @@ const formSchema = z.object({
   }),
 });
 
+const useDeviceFingerprint = () => {
+  return useQuery({
+    queryKey: ['deviceFingerprint'],
+    queryFn: async () => {
+      const fp = await FingerprintJS.load();
+      const { visitorId } = await fp.get();
+      return visitorId;
+    },
+    staleTime: Infinity,
+  });
+};
+
 const Login = () => {
   const [viewPassword, setViewPassword] = useState(false);
   const navigate = useNavigate();
+  const { data: deviceFingerprint } = useDeviceFingerprint();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,7 +75,7 @@ const Login = () => {
     mutate({
       email: values.email,
       password: values.password,
-      deviceSignature: 'a7b3c9d2-e1f0-4g5h-i6j7-k8l9m0n1o2p3',
+      deviceSignature: deviceFingerprint!!,
     });
   }
 
