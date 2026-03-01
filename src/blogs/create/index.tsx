@@ -27,7 +27,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router';
 import z from 'zod';
 import Tiptap from './text-editor';
@@ -125,7 +125,25 @@ const CreateBlog = () => {
           category => `${category.category.id}`,
         ) ?? [],
     },
+    shouldFocusError: true,
   });
+
+  const onError = (errors: FieldErrors<z.infer<typeof formSchema>>) => {
+    const firstError = Object.keys(errors)[0];
+
+    const element = document.querySelector(
+      `[name="${firstError}"]`,
+    ) as HTMLElement | null;
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+
+      element.focus();
+    }
+  };
 
   useEffect(() => {
     if (blogDetails) {
@@ -194,7 +212,10 @@ const CreateBlog = () => {
           </Button>
         )}
         <Form {...form}>
-          <form className="flex gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="flex gap-4"
+            onSubmit={form.handleSubmit(onSubmit, onError)}
+          >
             <fieldset className="flex flex-3/4 flex-col gap-6">
               <FormField
                 control={form.control}
