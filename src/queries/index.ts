@@ -48,7 +48,11 @@ export const MUTATIONS = {
     return await https.delete(`/course/${id}`);
   },
   editProject: async function (id: number, data: EditCourseType) {
-    return await https.patch(`/course/${id}`, data);
+    return await https.patch(`/course/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
   editVideos: async function (id: number, data: VideosType) {
     return await https.patch(`/course/${id}/videos`, { videos: data });
