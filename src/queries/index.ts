@@ -26,7 +26,7 @@ export const MUTATIONS = {
   },
   editInstructor: async function (
     id: number,
-    data: Omit<InstructorType, 'id' | 'createdAt'>,
+    data: Omit<InstructorType, 'id' | 'createdAt' | 'email'>,
   ) {
     return await https.patch(`/instructor/${id}`, data, {
       headers: {

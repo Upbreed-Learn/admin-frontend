@@ -31,6 +31,9 @@ import type { FormSchema } from '.';
 import { useRef, useState } from 'react';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
 import { Input } from '@/components/ui/input';
+import useSendRequest from '@/lib/hooks/useSendRequest';
+import { MUTATIONS } from '@/queries';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const libraryId = '515933';
 
@@ -87,6 +90,21 @@ function SortableItem(props: {
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { mutate, isPending } = useSendRequest<
+    { image: File },
+    { data: { url: string } }
+  >({
+    mutationFn: (data: { image: File }) => MUTATIONS.uploadImage(data),
+    errorToast: {
+      title: 'Error',
+      description: 'Failed to upload image',
+    },
+    successToast: {
+      title: 'Success',
+      description: 'Image uploaded successfully',
+    },
+  });
 
   const { field, index, form, onDelete } = props;
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -188,7 +206,15 @@ function SortableItem(props: {
                       file.type.startsWith('image/') &&
                       file.size <= 10 * 1024 * 1024
                     ) {
-                      onChange(file);
+                      mutate(
+                        { image: file },
+                        {
+                          onSuccess: data => {
+                            // data.url is the URL returned from your backend
+                            onChange(data.data.url);
+                          },
+                        },
+                      );
                     }
                   }}
                   onClick={() => inputRef.current?.click()}
@@ -206,20 +232,31 @@ function SortableItem(props: {
                           file.type.startsWith('image/') &&
                           file.size <= 10 * 1024 * 1024
                         ) {
-                          onChange(file);
+                          mutate(
+                            { image: file },
+                            {
+                              onSuccess: data => {
+                                onChange(data.data.url);
+                              },
+                            },
+                          );
                         }
                       }}
                     />
                     {value ? (
-                      <img
-                        src={
-                          typeof value === 'string'
-                            ? value
-                            : URL.createObjectURL(value)
-                        }
-                        alt="uploaded"
-                        className="size-full rounded object-cover"
-                      />
+                      isPending ? (
+                        <Skeleton className="size-full" />
+                      ) : (
+                        <img
+                          src={
+                            typeof value === 'string'
+                              ? value
+                              : URL.createObjectURL(value)
+                          }
+                          alt="uploaded"
+                          className="size-full rounded object-cover"
+                        />
+                      )
                     ) : (
                       <>
                         <ImageUploadIcon />

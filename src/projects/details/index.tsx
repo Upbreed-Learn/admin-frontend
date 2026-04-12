@@ -86,7 +86,7 @@ const videoSchema = z.object({
   description: z.string().min(1, { message: 'Description is required' }),
   bunnyVideoId: z.string().min(1, { message: 'Video ID is required' }),
   isTrailer: z.boolean(),
-thumbnailUrl: z
+  thumbnailUrl: z
     .union([
       z.url('Must be a valid URL'),
       z
@@ -556,7 +556,7 @@ const InstructorDetails = (props: {
             </button>
             <Button
               disabled={updateIsPending || updateVideosIsPending}
-              className="disabled:cursor-not-allowed"
+              className="disabled:cursor-not-allowed disabled:opacity-50"
             >
               {updateIsPending || updateVideosIsPending
                 ? 'Updating...'
