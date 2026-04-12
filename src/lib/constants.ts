@@ -113,6 +113,7 @@ export type VideosType = {
   bunnyVideoId: string;
   isTrailer: boolean;
   isPublic: boolean;
+  thumbnailUrl: string;
 }[];
 
 export interface BlogType {
