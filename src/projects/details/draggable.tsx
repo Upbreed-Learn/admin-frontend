@@ -24,10 +24,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { FormField } from '@/components/ui/form';
+import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import TextInput from '@/components/ui/custom/input';
 import type z from 'zod';
 import type { FormSchema } from '.';
+import { useRef, useState } from 'react';
+import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
+import { Input } from '@/components/ui/input';
 
 const libraryId = '515933';
 
@@ -82,6 +85,9 @@ function SortableItem(props: {
   form: UseFormReturn<z.infer<typeof FormSchema>>;
   onDelete: () => void;
 }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { field, index, form, onDelete } = props;
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
@@ -152,6 +158,78 @@ function SortableItem(props: {
                 className="h-auto bg-transparent text-black shadow-none"
                 validated
               />
+            )}
+          />
+          <Separator className="bg-[#0000001A]" />
+          <FormField
+            control={form.control}
+            name={`videos.${index}.thumbnailUrl`}
+            render={({ field: { value, onChange } }) => (
+              <FormItem>
+                <div
+                  className={cn(
+                    'flex cursor-pointer items-center justify-between',
+                    isDragging && 'border-[#305B43] bg-[#e5e5e5]',
+                  )}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={e => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files[0];
+                    if (
+                      file &&
+                      file.type.startsWith('image/') &&
+                      file.size <= 10 * 1024 * 1024
+                    ) {
+                      onChange(file);
+                    }
+                  }}
+                  onClick={() => inputRef.current?.click()}
+                >
+                  <div className="flex size-24 items-center justify-center overflow-hidden rounded-[10px] bg-[#D9D9D9]">
+                    <Input
+                      ref={inputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (
+                          file &&
+                          file.type.startsWith('image/') &&
+                          file.size <= 10 * 1024 * 1024
+                        ) {
+                          onChange(file);
+                        }
+                      }}
+                    />
+                    {value ? (
+                      <img
+                        src={
+                          typeof value === 'string'
+                            ? value
+                            : URL.createObjectURL(value)
+                        }
+                        alt="uploaded"
+                        className="size-full rounded object-cover"
+                      />
+                    ) : (
+                      <>
+                        <ImageUploadIcon />
+                      </>
+                    )}
+                  </div>
+                  <p className="text-black">UPLOAD THUMBNAIL</p>
+                </div>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </fieldset>

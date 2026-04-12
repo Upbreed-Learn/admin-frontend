@@ -86,6 +86,21 @@ const videoSchema = z.object({
   description: z.string().min(1, { message: 'Description is required' }),
   bunnyVideoId: z.string().min(1, { message: 'Video ID is required' }),
   isTrailer: z.boolean(),
+thumbnailUrl: z
+    .union([
+      z.url('Must be a valid URL'),
+      z
+        .any()
+        .refine(
+          file =>
+            !file ||
+            (file instanceof File &&
+              file.size <= 10 * 1024 * 1024 &&
+              file.type.startsWith('image/')),
+          { message: 'Please upload an image file not more than 10MB.' },
+        ),
+    ])
+    .optional(),
   // video: z.union([z.instanceof(File), z.url(), z.undefined()]).optional(),
   isPublic: z.boolean(),
 });
@@ -169,6 +184,7 @@ const InstructorDetails = (props: {
                 bunnyVideoId: '',
                 isTrailer: true,
                 isPublic: true,
+                thumbnailUrl: '',
               },
               {
                 title: '',
@@ -200,6 +216,7 @@ const InstructorDetails = (props: {
                   bunnyVideoId: '',
                   isTrailer: true,
                   isPublic: true,
+                  thumbnailUrl: '',
                 },
                 {
                   title: '',
@@ -207,6 +224,7 @@ const InstructorDetails = (props: {
                   bunnyVideoId: '',
                   isTrailer: false,
                   isPublic: false,
+                  thumbnailUrl: '',
                 },
               ],
       });
@@ -229,6 +247,7 @@ const InstructorDetails = (props: {
       bunnyVideoId: '',
       isTrailer: false,
       isPublic: false,
+      thumbnailUrl: '',
     });
   };
 
@@ -313,6 +332,7 @@ const InstructorDetails = (props: {
           id: i,
           isTrailer: i === 0 ? true : false,
           isPublic: i === 0 ? true : video.isPublic,
+          thumbnailUrl: i === 0 ? video.thumbnailUrl : '',
         })),
       ]);
     }

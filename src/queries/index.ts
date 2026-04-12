@@ -15,7 +15,7 @@ export const MUTATIONS = {
     password: string;
     deviceSignature: string;
   }) {
-    return await https.post(`/auth/login`, data);
+    return await https.post(`/auth/login?userType=ADMIN`, data);
   },
   instructor: async function (data: Omit<InstructorType, 'id' | 'createdAt'>) {
     return await https.post(`/instructor`, data, {
