@@ -58,6 +58,15 @@ const formSchema = z.object({
         ),
     ])
     .optional(),
+  accountNo: z.string().min(10, {
+    message: 'Account Number must be at least 10 characters.',
+  }),
+  bank: z.string().min(2, {
+    message: 'Bank Name must be at least 2 characters.',
+  }),
+  accountName: z.string().min(2, {
+    message: 'Account Name must be at least 2 characters.',
+  }),
 });
 
 const useGetInstructor = (id: string) => {
@@ -78,6 +87,9 @@ const InstructorSetupDialog = () => {
     email: '',
     aboutInstructor: '',
     image: undefined,
+    accountNo: '',
+    bank: '',
+    accountName: '',
   });
 
   useEffect(() => {
@@ -88,6 +100,9 @@ const InstructorSetupDialog = () => {
         email: '',
         aboutInstructor: '',
         image: undefined,
+        accountNo: '',
+        bank: '',
+        accountName: '',
       });
     }
   }, [addInstructor, instructor]);
@@ -144,6 +159,21 @@ const AddInstructorForm = (props: {
   const { confirm, setConfirm, setValues, values } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // const { mutate, isPending: isPendingUpload } = useSendRequest<
+  //   { image: File },
+  //   { data: { url: string } }
+  // >({
+  //   mutationFn: (data: { image: File }) => MUTATIONS.uploadImage(data),
+  //   errorToast: {
+  //     title: 'Error',
+  //     description: 'Failed to upload image',
+  //   },
+  //   successToast: {
+  //     title: 'Success',
+  //     description: 'Image uploaded successfully',
+  //   },
+  // });
+
   const queryClient = useQueryClient();
 
   const instructorData: InstructorDetailsType = data?.data?.data;
@@ -160,6 +190,13 @@ const AddInstructorForm = (props: {
       image: instructor
         ? instructorData?.instructorProfile.profilePictureUrl!!
         : values.image,
+      accountNo: instructor
+        ? instructorData?.instructorProfile.accountNo!!
+        : values.accountNo,
+      bank: instructor ? instructorData?.instructorProfile.bank!! : values.bank,
+      accountName: instructor
+        ? instructorData?.instructorProfile.accountName!!
+        : values.accountName,
     },
   });
 
@@ -171,6 +208,9 @@ const AddInstructorForm = (props: {
         email: instructorData.email,
         aboutInstructor: instructorData.instructorProfile.about,
         image: instructorData.instructorProfile.profilePictureUrl,
+        accountNo: instructorData.instructorProfile.accountNo,
+        bank: instructorData.instructorProfile.bank,
+        accountName: instructorData.instructorProfile.accountName,
       });
     }
   }, [instructor, instructorData, form]);
@@ -202,7 +242,7 @@ const AddInstructorForm = (props: {
           filter: confirm ? 'blur(2px)' : 'blur(0px)',
         }}
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-6 py-6"
+        className="flex max-h-170 flex-col gap-6 overflow-auto py-6"
       >
         <FormField
           control={form.control}
@@ -253,6 +293,9 @@ const AddInstructorForm = (props: {
                   }}
                 />
                 {value ? (
+                  // isPendingUpload ? (
+                  //   <Skeleton className="size-full" />
+                  // ) : (
                   <img
                     src={
                       typeof value === 'string'
@@ -296,7 +339,13 @@ const AddInstructorForm = (props: {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <TextInput field={field} placeholder="Email" validated />
+              <TextInput
+                field={field}
+                disabled={instructor ? true : false}
+                placeholder="Email"
+                className="disabled:opacity-50"
+                validated
+              />
             )}
           />
           <FormField
@@ -308,6 +357,27 @@ const AddInstructorForm = (props: {
                 placeholder="About Instructor"
                 validated
               />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="accountNo"
+            render={({ field }) => (
+              <TextInput field={field} placeholder="Account Number" validated />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="bank"
+            render={({ field }) => (
+              <TextInput field={field} placeholder="Bank Name" validated />
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="accountName"
+            render={({ field }) => (
+              <TextInput field={field} placeholder="Account Name" validated />
             )}
           />
         </fieldset>
@@ -355,6 +425,9 @@ const Confirm = (props: {
         email: '',
         aboutInstructor: '',
         image: undefined,
+        accountNo: '',
+        bank: '',
+        accountName: '',
       });
       queryClient.invalidateQueries({
         queryKey: ['instructors'],
@@ -366,10 +439,10 @@ const Confirm = (props: {
   });
 
   const { mutate: editMutate, isPending: isEditPending } = useSendRequest<
-    Omit<InstructorType, 'id' | 'createdAt'>,
+    Omit<InstructorType, 'id' | 'createdAt' | 'email'>,
     any
   >({
-    mutationFn: (data: Omit<InstructorType, 'id' | 'createdAt'>) =>
+    mutationFn: (data: Omit<InstructorType, 'id' | 'createdAt' | 'email'>) =>
       MUTATIONS.editInstructor(+instructor!!, data),
     errorToast: {
       title: 'Error',
@@ -394,9 +467,11 @@ const Confirm = (props: {
       editMutate({
         fname: values.firstName,
         lname: values.lastName,
-        email: values.email,
         about: values.aboutInstructor,
         profilePicture: values.image,
+        accountNo: values.accountNo,
+        bank: values.bank,
+        accountName: values.accountName,
       });
     } else {
       mutate({
@@ -405,6 +480,9 @@ const Confirm = (props: {
         email: values.email,
         about: values.aboutInstructor,
         profilePicture: values.image,
+        accountNo: values.accountNo,
+        bank: values.bank,
+        accountName: values.accountName,
       });
     }
   };

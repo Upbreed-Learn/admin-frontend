@@ -29,6 +29,9 @@ export interface InstructorType {
   about: string;
   profilePicture: File;
   createdAt: string;
+  accountNo: string;
+  bank: string;
+  accountName: string;
 }
 
 type InstructorProfileType = {
@@ -39,6 +42,9 @@ type InstructorProfileType = {
   profilePictureUrl: string;
   expertise: string;
   title: string;
+  accountNo: string;
+  bank: string;
+  accountName: string;
 };
 export interface InstructorDetailsType {
   id: string;
