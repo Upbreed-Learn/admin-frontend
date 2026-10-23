@@ -6,7 +6,7 @@ import MoreTransactionHistoryModal from './more-transaction-history-modal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERIES } from '@/queries';
 import type { FinanceDataType, TransactionHistoryType } from '@/lib/constants';
-import { formatNumber, formatToYearMonth, formatTrxnDate } from '@/lib/utils';
+import { formatMoney, otherCurrencies, formatNumber, formatToYearMonth, formatTrxnDate } from '@/lib/utils';
 import TotalRevenueChart from '@/dashboard/total-revenue';
 import { TotalRevenueError, TotalRevenueSkeleton } from '@/dashboard';
 import { useState } from 'react';
@@ -83,6 +83,9 @@ const Finance = () => {
                 : `$${formatNumber(financeData.currentMonthRevenue.usd)}`}
             </p>
             <p className="text-xs/[100%] font-semibold">Monthly Revenue</p>
+            {otherCurrencies(financeData.currentMonthRevenue) && (
+              <p className="text-xs text-[#737373]">{otherCurrencies(financeData.currentMonthRevenue)}</p>
+            )}
           </div>
           <div className="flex basis-full flex-col gap-0.5 border-x border-[#9B9B9B] py-6 pr-8 pl-14">
             <p className="text-5xl/[100%] font-bold">
@@ -91,6 +94,9 @@ const Finance = () => {
                 : `$${formatNumber(financeData.currentYearRevenue.usd)}`}
             </p>
             <p className="text-xs/[100%] font-semibold">Yearly Revenue</p>
+            {otherCurrencies(financeData.currentYearRevenue) && (
+              <p className="text-xs text-[#737373]">{otherCurrencies(financeData.currentYearRevenue)}</p>
+            )}
           </div>
           <div className="flex basis-full flex-col gap-0.5">
             <p className="text-5xl/[100%] font-bold">
@@ -99,6 +105,9 @@ const Finance = () => {
                 : `$${formatNumber(financeData.totalRevenue.usd)}`}
             </p>
             <p className="text-xs/[100%] font-semibold">Total Revenue</p>
+            {otherCurrencies(financeData.totalRevenue) && (
+              <p className="text-xs text-[#737373]">{otherCurrencies(financeData.totalRevenue)}</p>
+            )}
           </div>
         </div>
       )}
@@ -175,7 +184,11 @@ const HistoryCard = (props: TransactionHistoryType) => {
       </div>
       <p className="text-xs/[100%] font-medium">{props.paymentGateway}</p>
       <p className="text-sm/[100%] font-medium">
-        {currency === 'NGN' ? `₦${props.amount.naira}` : `$${props.amount.usd}`}
+        {props.amount.currency && props.amount.value !== undefined
+          ? formatMoney(props.amount.value, props.amount.currency)
+          : currency === 'NGN'
+            ? `₦${props.amount.naira}`
+            : `$${props.amount.usd}`}
       </p>
     </div>
   );

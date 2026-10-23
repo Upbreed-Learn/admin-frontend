@@ -179,14 +179,17 @@ export interface FinanceDataType {
   currentMonthRevenue: {
     usd: number;
     naira: number;
+    byCurrency?: Record<string, number>;
   };
   currentYearRevenue: {
     usd: number;
     naira: number;
+    byCurrency?: Record<string, number>;
   };
   totalRevenue: {
     usd: number;
     naira: number;
+    byCurrency?: Record<string, number>;
   };
   revenueHistory: {
     timestamp: string;
@@ -202,5 +205,10 @@ export interface TransactionHistoryType {
   amount: {
     usd: number;
     naira: number;
+    /** Amount in the payment's own currency (new API). */
+    value?: number;
+    currency?: string;
   };
+  status?: string;
+  reference?: string;
 }

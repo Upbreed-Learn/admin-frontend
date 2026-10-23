@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import type { TransactionHistoryType } from '@/lib/constants';
 import { formatTrxnDate } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 import { Upload } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 import { useEffect, useState, type ChangeEvent } from 'react';
@@ -144,7 +145,11 @@ const HistoryCard = (props: TransactionHistoryType) => {
       </div>
       <p className="text-xs/[100%] font-medium">{props.paymentGateway}</p>
       <p className="text-xs/[100%] font-medium">
-        {currency === 'NGN' ? `₦${props.amount.naira}` : `$${props.amount.usd}`}
+        {props.amount.currency && props.amount.value !== undefined
+          ? formatMoney(props.amount.value, props.amount.currency)
+          : currency === 'NGN'
+            ? `₦${props.amount.naira}`
+            : `$${props.amount.usd}`}
       </p>
     </div>
   );

@@ -112,3 +112,18 @@ export function formatTrxnDate(dateString: string): string {
 // } catch (error) {
 //   console.error('Invalid token', error);
 // }
+
+/** "GH₵120" — an amount in any currency. */
+export function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString()}`;
+  }
+}
+
+/** Takings in currencies other than USD/NGN (from regional prices), e.g. "+ GH₵120 · £8". */
+export function otherCurrencies(rev?: { byCurrency?: Record<string, number> }): string {
+  const others = Object.entries(rev?.byCurrency ?? {}).filter(([c, v]) => c !== 'USD' && c !== 'NGN' && v > 0);
+  return others.length ? '+ ' + others.map(([c, v]) => formatMoney(v, c)).join(' · ') : '';
+}
