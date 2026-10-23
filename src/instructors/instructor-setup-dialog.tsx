@@ -416,7 +416,7 @@ const Confirm = (props: {
     },
     successToast: {
       title: 'Success',
-      description: 'Instructor added successfully',
+      description: 'Instructor added. They have been emailed a link to log in.',
     },
     onSuccessCallback: () => {
       setValues({
