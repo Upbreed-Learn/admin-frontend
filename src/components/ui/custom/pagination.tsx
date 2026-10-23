@@ -16,7 +16,7 @@ const PaginationSection = (props: {
   totalPages?: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
 }) => {
-  const { currentPage, totalPages = 10, setCurrentPage } = props;
+  const { currentPage, totalPages = 0, setCurrentPage } = props;
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -57,10 +57,13 @@ const PaginationSection = (props: {
 
   const pageNumbers = getPageNumbers();
 
+  // One page (or none): no pagination at all.
+  if (totalPages <= 1) return null;
+
   return (
     <Pagination>
       <PaginationContent>
-        <PaginationItem>
+        {currentPage > 1 && (<PaginationItem>
           <PaginationPrevious
             onClick={handlePreviousPage}
             className={cn(
@@ -68,7 +71,7 @@ const PaginationSection = (props: {
               currentPage === 1 && 'cursor-not-allowed opacity-50',
             )}
           />
-        </PaginationItem>
+        </PaginationItem>)}
         <span className="flex items-center gap-2 md:gap-4">
           {pageNumbers.map((page, index) => {
             return (
@@ -93,7 +96,7 @@ const PaginationSection = (props: {
         <PaginationItem>
           <PaginationEllipsis />
         </PaginationItem> */}
-        <PaginationItem>
+        {currentPage < totalPages && (<PaginationItem>
           <PaginationNext
             onClick={handleNextPage}
             className={cn(
@@ -101,7 +104,7 @@ const PaginationSection = (props: {
               currentPage === totalPages && 'cursor-not-allowed opacity-50',
             )}
           />
-        </PaginationItem>
+        </PaginationItem>)}
       </PaginationContent>
     </Pagination>
   );

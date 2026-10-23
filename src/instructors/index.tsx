@@ -176,7 +176,7 @@ const InstructorCard = (props: InstructorDetailsType) => {
       />
       <AccordionItem
         value={`item-${id}`}
-        className="group relative basis-full border-b-[0.85px] border-[#FFFFFF4D]"
+        className="group relative min-w-0 basis-full border-b-[0.85px] border-[#FFFFFF4D]"
       >
         <div className="_pointer-events-none absolute top-4 right-8 flex gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
           <button
@@ -192,15 +192,15 @@ const InstructorCard = (props: InstructorDetailsType) => {
             onCheckedChange={handledelete}
           />
         </div>
-        <AccordionTrigger className="hover:no-underline [&>svg]:text-white">
-          <div className="flex basis-full items-center justify-between">
+        <AccordionTrigger className="min-w-0 pr-2 hover:no-underline [&>svg]:size-5 [&>svg]:text-white">
+          <div className="flex min-w-0 basis-full items-center justify-between pr-20">
             <span className="flex items-center gap-[10px]">
               <span className="text-sm/4 font-extrabold capitalize">{`${fname} ${lname}`}</span>
-              <span className="text-xs/4 font-medium">{email}</span>
+              <span className="truncate text-xs/4 font-medium">{email}</span>
             </span>
           </div>
         </AccordionTrigger>
-        <AccordionContent className="text-xs/[100%] font-medium">
+        <AccordionContent className="pr-8 text-xs/5 font-medium break-words whitespace-pre-wrap [overflow-wrap:anywhere]">
           {instructorProfile.about}
         </AccordionContent>
       </AccordionItem>
