@@ -32,6 +32,10 @@ const ROUTES = [
     label: 'Finance',
   },
   {
+    path: '/pricing',
+    label: 'Pricing',
+  },
+  {
     path: '/instructors',
     label: 'Instructors',
   },
@@ -131,21 +135,21 @@ const Sidebar = () => {
                   />
                 </div>
               )}
-              {route.path === '/finance' && (
+              {(route.path === '/finance' || route.path === '/pricing') && (
                 <div className="grid-stack grid">
                   <Coin
                     stroke={'#737373'}
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/finance' && 'opacity-100',
-                      pathname !== '/finance' && 'group-hover:!opacity-100',
+                      pathname === route.path && 'opacity-100',
+                      pathname !== route.path && 'group-hover:!opacity-100',
                     )}
                   />
                   <Coin
                     className={cn(
                       'grid-area-stack transition-opacity',
-                      pathname === '/finance' && 'opacity-0',
-                      pathname !== '/finance' && 'group-hover:!opacity-0',
+                      pathname === route.path && 'opacity-0',
+                      pathname !== route.path && 'group-hover:!opacity-0',
                     )}
                   />
                 </div>

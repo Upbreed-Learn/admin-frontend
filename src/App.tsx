@@ -15,6 +15,7 @@ import Login from './auth';
 import { checkAuthLoader } from './lib/utils';
 import ErrorPage from './ErrorPage';
 import Categories from './categories';
+import Pricing from './pricing';
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
       {
         path: '/finance',
         element: <Finance />,
+      },
+      {
+        path: '/pricing',
+        element: <Pricing />,
       },
       {
         path: '/instructors',
