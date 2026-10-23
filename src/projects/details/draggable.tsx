@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import useSendRequest from '@/lib/hooks/useSendRequest';
 import { MUTATIONS } from '@/queries';
 import { Skeleton } from '@/components/ui/skeleton';
+import VideoUploadButton from './video-upload';
 
 const libraryId = '515933';
 
@@ -170,12 +171,20 @@ function SortableItem(props: {
             control={form.control}
             name={`videos.${index}.bunnyVideoId`}
             render={({ field }) => (
-              <TextInput
-                field={field}
-                placeholder="Bunny Video ID"
-                className="h-auto bg-transparent text-black shadow-none"
-                validated
-              />
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <TextInput
+                    field={field}
+                    placeholder="Bunny Video ID (or upload a file →)"
+                    className="h-auto bg-transparent text-black shadow-none"
+                    validated
+                  />
+                </div>
+                <VideoUploadButton
+                  title={form.watch(`videos.${index}.title`)}
+                  onUploaded={videoId => form.setValue(`videos.${index}.bunnyVideoId`, videoId, { shouldValidate: true, shouldDirty: true })}
+                />
+              </div>
             )}
           />
           <Separator className="bg-[#0000001A]" />
