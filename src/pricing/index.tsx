@@ -20,12 +20,12 @@ type Plan = {
   period: 'monthly' | 'biannually' | 'annually';
   noDevices: number;
   isActive: boolean;
+  biannualDiscount: number;
+  annualDiscount: number;
   allPrices?: Price[];
 };
 type Options = { currencies: string[]; paystackCurrencies: string[]; yourCountry: string | null };
 
-const PERIODS = ['monthly', 'biannually', 'annually'] as const;
-const PERIOD_LABEL = { monthly: 'Monthly', biannually: 'Every 6 months', annually: 'Yearly' };
 const FALLBACK_OPTIONS: Options = {
   currencies: ['NGN', 'GHS', 'KES', 'ZAR', 'USD', 'GBP', 'EUR', 'CAD'],
   paystackCurrencies: ['NGN', 'GHS', 'KES', 'ZAR', 'USD'],
@@ -35,6 +35,17 @@ const FALLBACK_OPTIONS: Options = {
 const errorMessage = (e: any) => {
   const m = e?.response?.data?.message;
   return Array.isArray(m) ? m.join(', ') : m || e?.message || 'Something went wrong';
+};
+
+const cyclePreview = (r: Price, months: number, discount: string) => {
+  const monthly = Number(r.amount);
+  if (!monthly || !r.currency) return '—';
+  const total = Math.round(monthly * months * (100 - Number(discount || 0))) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: r.currency, maximumFractionDigits: 2 }).format(total);
+  } catch {
+    return `${r.currency} ${total}`;
+  }
 };
 
 const field = 'h-9 rounded-lg border border-[#D9D9D9] bg-white px-3 text-sm outline-none focus:border-[#305B43]';
@@ -56,10 +67,11 @@ const Pricing = () => {
       <div className="flex flex-col gap-2">
         <h1>Pricing</h1>
         <p className="max-w-2xl text-sm text-[#737373]">
-          Set a price for each country by hand. Visitors automatically see the price for their country
-          (detected from their internet connection). Everyone else sees the <b>DEFAULT</b> price, and
-          anyone can choose to pay the DEFAULT price instead. Changing a price only affects new
-          subscribers — people already subscribed keep renewing at the price they signed up for.
+          Set a <b>monthly</b> price for each country by hand. Visitors automatically see one price for their
+          country (detected from their internet connection); everyone else sees the <b>DEFAULT</b> price.
+          The 6-month and yearly prices are the monthly price × 6 or × 12, minus the discount you set.
+          Changing a price only affects new subscribers — people already subscribed keep renewing at the
+          price they signed up for.
         </p>
       </div>
 
@@ -86,19 +98,21 @@ const Pricing = () => {
 };
 
 function NewPlan({ onCreated }: { onCreated: () => void }) {
-  const [form, setForm] = useState({ name: '', period: 'monthly', noDevices: '1', amountUsd: '', amountNaira: '' });
+  const [form, setForm] = useState({ name: '', noDevices: '1', amountUsd: '', amountNaira: '', biannualDiscount: '0', annualDiscount: '0' });
   const create = useMutation({
     mutationFn: () =>
       https.post('/subscription', {
         name: form.name,
-        period: form.period,
+        period: 'monthly',
         noDevices: Number(form.noDevices),
         amountUsd: Number(form.amountUsd),
         amountNaira: Number(form.amountNaira),
+        biannualDiscount: Number(form.biannualDiscount),
+        annualDiscount: Number(form.annualDiscount),
       }),
     onSuccess: () => {
       toast.success('Plan created', { description: 'Add more countries below.' });
-      setForm({ name: '', period: 'monthly', noDevices: '1', amountUsd: '', amountNaira: '' });
+      setForm({ name: '', noDevices: '1', amountUsd: '', amountNaira: '', biannualDiscount: '0', annualDiscount: '0' });
       onCreated();
     },
     onError: e => toast.error('Could not create plan', { description: errorMessage(e) }),
@@ -115,32 +129,30 @@ function NewPlan({ onCreated }: { onCreated: () => void }) {
       }}
     >
       <h2 className="font-semibold">New plan</h2>
-      <div className="grid grid-cols-5 gap-3 text-xs text-[#737373]">
+      <div className="grid grid-cols-3 gap-3 text-xs text-[#737373] xl:grid-cols-6">
         <label className="flex flex-col gap-1">
           Name
           <input required className={field} value={form.name} onChange={set('name')} placeholder="Monthly" />
-        </label>
-        <label className="flex flex-col gap-1">
-          Billing
-          <select className={field} value={form.period} onChange={set('period')}>
-            {PERIODS.map(p => (
-              <option key={p} value={p}>
-                {PERIOD_LABEL[p]}
-              </option>
-            ))}
-          </select>
         </label>
         <label className="flex flex-col gap-1">
           Devices
           <input required type="number" min={1} max={20} className={field} value={form.noDevices} onChange={set('noDevices')} />
         </label>
         <label className="flex flex-col gap-1">
-          DEFAULT price (USD)
+          DEFAULT monthly price (USD)
           <input required type="number" min="0.01" step="0.01" className={field} value={form.amountUsd} onChange={set('amountUsd')} />
         </label>
         <label className="flex flex-col gap-1">
-          Nigeria price (NGN)
+          Nigeria monthly price (NGN)
           <input required type="number" min="0.01" step="0.01" className={field} value={form.amountNaira} onChange={set('amountNaira')} />
+        </label>
+        <label className="flex flex-col gap-1">
+          6-month discount (%)
+          <input type="number" min={0} max={90} className={field} value={form.biannualDiscount} onChange={set('biannualDiscount')} />
+        </label>
+        <label className="flex flex-col gap-1">
+          Yearly discount (%)
+          <input type="number" min={0} max={90} className={field} value={form.annualDiscount} onChange={set('annualDiscount')} />
         </label>
       </div>
       <Button type="submit" disabled={create.isPending} className="self-start">
@@ -156,6 +168,17 @@ function PlanCard({ plan, options }: { plan: Plan; options: Options }) {
     [...(p.allPrices ?? [])].sort((a, b) => (a.region === 'DEFAULT' ? -1 : b.region === 'DEFAULT' ? 1 : a.region.localeCompare(b.region)));
   const [rows, setRows] = useState<Price[]>(toRows(plan));
   useEffect(() => setRows(toRows(plan)), [plan]);
+  const [discounts, setDiscounts] = useState({ biannual: String(plan.biannualDiscount ?? 0), annual: String(plan.annualDiscount ?? 0) });
+  useEffect(() => setDiscounts({ biannual: String(plan.biannualDiscount ?? 0), annual: String(plan.annualDiscount ?? 0) }), [plan]);
+  const discountsDirty = Number(discounts.biannual) !== (plan.biannualDiscount ?? 0) || Number(discounts.annual) !== (plan.annualDiscount ?? 0);
+  const saveDiscounts = useMutation({
+    mutationFn: () => https.patch(`/subscription/${plan.id}`, { biannualDiscount: Number(discounts.biannual), annualDiscount: Number(discounts.annual) }),
+    onSuccess: () => {
+      toast.success('Discounts saved', { description: '6-month and yearly prices updated.' });
+      refresh();
+    },
+    onError: e => toast.error('Could not save discounts', { description: errorMessage(e) }),
+  });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['plans'] });
 
   const save = useMutation({
@@ -205,7 +228,7 @@ function PlanCard({ plan, options }: { plan: Plan; options: Options }) {
             {!plan.isActive && <span className="ml-2 rounded bg-[#D9D9D9] px-2 py-0.5 text-xs font-normal">Hidden</span>}
           </h2>
           <p className="text-xs text-[#737373]">
-            {PERIOD_LABEL[plan.period]} · {plan.noDevices} device{plan.noDevices === 1 ? '' : 's'}
+            {plan.noDevices} device{plan.noDevices === 1 ? '' : 's'}
           </p>
         </div>
         <div className="flex items-center gap-4 text-sm">
@@ -229,7 +252,9 @@ function PlanCard({ plan, options }: { plan: Plan; options: Options }) {
           <tr>
             <th className="pb-2 font-normal">Country code</th>
             <th className="pb-2 font-normal">Currency</th>
-            <th className="pb-2 font-normal">Price</th>
+            <th className="pb-2 font-normal">Monthly price</th>
+            <th className="pb-2 font-normal">6 months</th>
+            <th className="pb-2 font-normal">1 year</th>
             <th className="pb-2 font-normal">Paid through</th>
             <th />
           </tr>
@@ -257,6 +282,8 @@ function PlanCard({ plan, options }: { plan: Plan; options: Options }) {
               <td className="py-1 pr-2">
                 <input type="number" min="0.01" step="0.01" className={`${field} w-32`} value={r.amount} onChange={e => update(i, { amount: e.target.value })} />
               </td>
+              <td className="py-1 pr-2 text-xs text-[#737373]">{cyclePreview(r, 6, discounts.biannual)}</td>
+              <td className="py-1 pr-2 text-xs text-[#737373]">{cyclePreview(r, 12, discounts.annual)}</td>
               <td className="py-1 pr-2">
                 <select className={field} value={r.provider} onChange={e => update(i, { provider: e.target.value as Price['provider'] })}>
                   <option value="STRIPE">Stripe</option>
@@ -276,6 +303,20 @@ function PlanCard({ plan, options }: { plan: Plan; options: Options }) {
           ))}
         </tbody>
       </table>
+
+      <div className="flex flex-wrap items-end gap-4 text-xs text-[#737373]">
+        <label className="flex flex-col gap-1">
+          6-month discount (%)
+          <input type="number" min={0} max={90} className={`${field} w-28`} value={discounts.biannual} onChange={e => setDiscounts(d => ({ ...d, biannual: e.target.value }))} />
+        </label>
+        <label className="flex flex-col gap-1">
+          Yearly discount (%)
+          <input type="number" min={0} max={90} className={`${field} w-28`} value={discounts.annual} onChange={e => setDiscounts(d => ({ ...d, annual: e.target.value }))} />
+        </label>
+        <Button variant="outline" disabled={!discountsDirty || saveDiscounts.isPending} onClick={() => saveDiscounts.mutate()}>
+          Save discounts
+        </Button>
+      </div>
 
       <div className="flex items-center gap-4">
         <button
