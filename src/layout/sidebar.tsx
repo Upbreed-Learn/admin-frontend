@@ -36,6 +36,10 @@ const ROUTES = [
     label: 'Pricing',
   },
   {
+    path: '/payouts',
+    label: 'Payouts',
+  },
+  {
     path: '/instructors',
     label: 'Instructors',
   },
@@ -135,7 +139,7 @@ const Sidebar = () => {
                   />
                 </div>
               )}
-              {(route.path === '/finance' || route.path === '/pricing') && (
+              {(route.path === '/finance' || route.path === '/pricing' || route.path === '/payouts') && (
                 <div className="grid-stack grid">
                   <Coin
                     stroke={'#737373'}
