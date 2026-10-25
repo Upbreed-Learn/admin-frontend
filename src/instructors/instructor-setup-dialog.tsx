@@ -502,8 +502,8 @@ const Confirm = (props: {
     >
       <p className="text-center text-xs/4 font-semibold text-[#9C9C9C]">
         {instructor
-          ? 'Are you sure you want to update this instructor?'
-          : 'Would you like to create an account for this instructor?'}
+          ? 'Save these changes? (No email is sent when you edit an instructor.)'
+          : 'Create an account for this instructor? We will email them a link to set their password.'}
         <br /> <br />
         <span className={cn('text-[#305B43]')}>“{values.email}”</span>
       </p>
@@ -515,13 +515,13 @@ const Confirm = (props: {
             'cursor-pointer bg-[#305B43] text-[#D0EA50] hover:bg-[#305B43]/80 disabled:cursor-not-allowed',
           )}
         >
-          {isPending || isEditPending ? 'Sending...' : 'Send'}
+          {isPending || isEditPending ? 'Saving...' : instructor ? 'Save changes' : 'Create & send invite'}
         </Button>
         <Button
           onClick={() => handleCancel()}
           className="cursor-pointer bg-transparent text-[#9C9C9C] hover:bg-transparent"
         >
-          Don't Send
+          Cancel
         </Button>
       </div>
     </div>
