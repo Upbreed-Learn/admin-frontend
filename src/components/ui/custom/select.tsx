@@ -12,7 +12,7 @@ import { FormControl, FormItem, FormLabel, FormMessage } from '../form';
 import type { ControllerRenderProps } from 'react-hook-form';
 
 export type SelectOption = {
-  value: string;
+  value: string | number;
   label: string;
 };
 
@@ -73,7 +73,7 @@ const SelectInput = (props: SelectInputprops) => {
           {options.map(option => (
             <SelectItem
               key={option.value}
-              value={option.value}
+              value={String(option.value)}
               className={cn('capitalize', selectClassName)}
             >
               {option.label}
@@ -103,7 +103,7 @@ const SelectInput = (props: SelectInputprops) => {
         <Select
           disabled={disabled}
           onValueChange={field?.onChange}
-          defaultValue={field?.value}
+          value={field?.value == null || field.value === '' ? undefined : String(field.value)}
         >
           <FormControl>
             <SelectTrigger className={cn('border-0 bg-[#D9D9D980]', className)}>
@@ -114,7 +114,7 @@ const SelectInput = (props: SelectInputprops) => {
             {options?.map(option => (
               <SelectItem
                 key={option.value}
-                value={option.value}
+                value={String(option.value)}
                 className="capitalize"
               >
                 {option.label}

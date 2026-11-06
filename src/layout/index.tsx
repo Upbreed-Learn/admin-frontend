@@ -16,7 +16,7 @@ const RootLayout = () => {
     <div className="flex">
       <Toaster />
       <Sidebar />
-      <main className="ml-[15.58625rem] flex w-full justify-center">
+      <main className="ml-[13.5rem] flex w-full justify-center px-8">
         <div className="flex w-full max-w-[60rem] flex-col">
           <div
             className={cn(

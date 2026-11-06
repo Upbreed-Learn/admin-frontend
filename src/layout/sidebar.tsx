@@ -55,19 +55,19 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   return (
-    <aside className="hide-scrollbar fixed flex h-[calc(100vh/var(--site-zoom,1))] w-max flex-col gap-16 overflow-auto bg-[#305B43] px-11 pt-16">
-      <Link to={'/'} className="h-9 w-[9.625rem]">
+    <aside className="hide-scrollbar fixed flex h-[calc(100vh/var(--site-zoom,1))] w-[13.5rem] flex-col gap-10 overflow-auto bg-[#305B43] px-6 pt-10 pb-8">
+      <Link to={'/'} className="h-7 w-[7.5rem] self-center">
         <img src={logo} alt="upbreed logo" className="size-full" />
       </Link>
-      <div className="flex flex-col gap-[7.5rem]">
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-1 flex-col justify-between gap-8">
+        <div className="flex flex-col gap-1">
           {ROUTES.map(route => (
             <NavLink
               key={route.path}
               to={route.path}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-center gap-4 rounded-lg px-6 py-2 text-xs/[100%] font-semibold transition-colors hover:bg-white hover:text-[#737373]',
+                  'group flex items-center gap-3 rounded-lg px-4 py-2 text-[11px]/[100%] font-semibold transition-colors hover:bg-white hover:text-[#737373] [&_svg]:size-4',
                   isActive ? 'bg-white text-[#737373]' : 'bg-none text-white',
                   route.path === '/categories' &&
                     'self-end hover:bg-transparent hover:text-[#D0EA50]',
@@ -217,10 +217,10 @@ const Sidebar = () => {
             </NavLink>
           ))}
         </div>
-        <div className="flex flex-col gap-4 px-6">
+        <div className="flex flex-col gap-3 px-4 [&_svg]:size-4">
           <NavLink
             to={'/settings'}
-            className={({ isActive }) => cn('flex items-center gap-4 text-xs/[100%] font-semibold text-white', isActive && 'text-[#D0EA50]')}
+            className={({ isActive }) => cn('flex items-center gap-3 text-[11px]/[100%] font-semibold text-white', isActive && 'text-[#D0EA50]')}
           >
             {pathname === '/settings' ? <Settings stroke={'#D0EA50'} /> : <Settings />}
             <span>Settings</span>
@@ -229,7 +229,7 @@ const Sidebar = () => {
             onClick={() => {
               (Cookies.remove('rf'), navigate('/auth/login'));
             }}
-            className="flex cursor-pointer items-center gap-4 text-xs/[100%] font-semibold text-white"
+            className="flex cursor-pointer items-center gap-3 text-[11px]/[100%] font-semibold text-white"
           >
             <Logout />
             <span>Logout</span>
