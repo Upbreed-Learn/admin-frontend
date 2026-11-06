@@ -15,7 +15,6 @@ import Login from './auth';
 import { checkAuthLoader } from './lib/utils';
 import ErrorPage from './ErrorPage';
 import Categories from './categories';
-import Pricing from './pricing';
 import Payouts from './payouts';
 import Settings from './settings';
 
@@ -54,10 +53,6 @@ const router = createBrowserRouter([
       {
         path: '/finance',
         element: <Finance />,
-      },
-      {
-        path: '/pricing',
-        element: <Pricing />,
       },
       {
         path: '/settings',

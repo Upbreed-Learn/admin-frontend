@@ -53,6 +53,13 @@ export function formatNumber(num: number): string {
   }
 }
 
+/** 90 → "1h 30m" */
+export function formatHm(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60);
+  const m = Math.round(totalMinutes % 60);
+  return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+
 export function formatToHMS(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);

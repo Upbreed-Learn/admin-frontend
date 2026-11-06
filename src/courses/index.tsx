@@ -1,8 +1,7 @@
 import { SearchInput } from '@/components/ui/custom/input';
 import DataTable from '../components/data-table';
 import { CourseColumns, CourseColumnsSkeleton } from './columns';
-import ExportDropdown from '@/components/ui/custom/dropdown-menu';
-import { MoreVertical } from 'lucide-react';
+import SaveReport from '@/components/save-report';
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useGetCourses, useGetSearchedCourses } from '@/queries/hooks';
 import ErrorState from '@/components/error';
@@ -73,9 +72,22 @@ const Courses = () => {
     <div className="flex flex-col gap-6">
       <SearchInput value={search} onChange={e => handleChange(e)} />
       <div className="flex flex-col gap-3">
-        <ExportDropdown className="self-end">
-          <MoreVertical />
-        </ExportDropdown>
+        <SaveReport
+          className="self-end"
+          filename="upbreed-courses"
+          disabled={!activeList?.length}
+          rows={() => [
+            ['Title', 'Instructor', 'Duration (minutes)', 'Lessons', 'On homepage', 'Views'],
+            ...(activeList ?? []).map(c => [
+              c.title,
+              `${c.instructor?.fname ?? ''} ${c.instructor?.lname ?? ''}`.trim(),
+              c.preview?.durationInMinutes ?? 0,
+              c.preview?.lessonCount ?? 0,
+              c.isHomepage ? 'Yes' : 'No',
+              (c as { views?: number }).views ?? 0,
+            ]),
+          ]}
+        />
         <div className="bg-[#A1A1A10F]">
           {isError || (search !== '' && isSearchError) ? (
             <ErrorState

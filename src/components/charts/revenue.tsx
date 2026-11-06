@@ -32,6 +32,8 @@ interface TooltipProps {
   }>;
 }
 
+const short = (n: number) => (n >= 1e9 ? `${+(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : `${n}`);
+
 const RevenueChart = (props: { data: DataPoint[], height: number }) => {
   const { data, height=120 } = props;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -121,13 +123,25 @@ const RevenueChart = (props: { data: DataPoint[], height: number }) => {
           tick={<CustomAxisTick />}
           height={60}
         />
+        {/* Naira and dollars are on their own scales, so neither line flattens the other. */}
         <YAxis
+          yAxisId="usd"
           axisLine={false}
           tickLine={false}
-          tick={{ fill: '#9CA3AF', fontSize: 12 }}
-          tickFormatter={value => `$${value / 1000}k`}
-          domain={[0, 500000]}
-          ticks={[20000, 50000, 100000, 500000]}
+          width={48}
+          tick={{ fill: '#9CA3AF', fontSize: 10 }}
+          tickFormatter={value => `$${short(value)}`}
+          domain={[0, (max: number) => Math.max(10, Math.ceil(max * 1.15))]}
+        />
+        <YAxis
+          yAxisId="naira"
+          orientation="right"
+          axisLine={false}
+          tickLine={false}
+          width={52}
+          tick={{ fill: '#9CA3AF', fontSize: 10 }}
+          tickFormatter={value => `₦${short(value)}`}
+          domain={[0, (max: number) => Math.max(1000, Math.ceil(max * 1.15))]}
         />
         <Tooltip
           content={<CustomTooltip />}
@@ -141,6 +155,7 @@ const RevenueChart = (props: { data: DataPoint[], height: number }) => {
         />
         <Line
           type="monotone"
+          yAxisId="usd"
           dataKey="usd"
           stroke="#00230F"
           strokeWidth={3}
@@ -149,6 +164,7 @@ const RevenueChart = (props: { data: DataPoint[], height: number }) => {
         />
         <Line
           type="monotone"
+          yAxisId="naira"
           dataKey="naira"
           stroke="#34A853"
           strokeWidth={3}

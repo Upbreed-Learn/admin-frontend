@@ -2,7 +2,6 @@ import FileIcon from '@/assets/jsx-icons/file-icon';
 import MoneyIcon from '@/assets/jsx-icons/money-icon';
 import PeopleAlt from '@/assets/jsx-icons/people-alt';
 import UsersMore from '@/assets/jsx-icons/users-more';
-import { Button } from '@/components/ui/button';
 import type { ReactNode } from 'react';
 import Subscriber from './subscriber';
 import SubscriberGrowth from './subscriber-growth';
@@ -10,17 +9,22 @@ import TotalRevenueChart from './total-revenue';
 import { Link } from 'react-router';
 import Instructors from './instructors';
 import { cn, formatNumber } from '@/lib/utils';
-import { ArrowLeftRight, MoreVertical } from 'lucide-react';
 import { useQueryState } from 'nuqs';
-import ExportDropdown from '@/components/ui/custom/dropdown-menu';
+import SaveReport from '@/components/save-report';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERIES } from '@/queries';
 import type { DashboardDataType } from '@/lib/constants';
 
+// Twelve months of history, from the 1st of the month 11 months ago.
+const yearAgo = () => {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 11, 1)).toISOString();
+};
+
 export const useGetDashboardData = () => {
   return useQuery({
     queryKey: ['dashboardData'],
-    queryFn: () => QUERIES.getDashboardData(),
+    queryFn: () => QUERIES.getDashboardData(yearAgo()),
   });
 };
 
@@ -37,9 +41,34 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-1.5 pb-6">
-      <ExportDropdown className="self-end">
-        <MoreVertical />
-      </ExportDropdown>
+      <div className="flex items-center justify-end gap-3">
+        <button
+          onClick={() => setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))}
+          className="h-8 cursor-pointer rounded-full bg-[#D0EA50] px-4 text-[10px] font-semibold text-[#00230F]"
+        >
+          Switch to {currency === 'NGN' ? 'USD' : 'NGN'}
+        </button>
+        <SaveReport
+          filename="upbreed-dashboard"
+          disabled={!dashboardData}
+          rows={() => [
+            ['Total courses', dashboardData.totalCourses ?? 0],
+            ['Instructors', dashboardData.totalInstructors],
+            ['Subscribers', dashboardData.totalSubscribers],
+            ['Users', dashboardData.totalUsers],
+            ['Revenue (NGN)', dashboardData.totalRevenue.naira],
+            ['Revenue (USD)', dashboardData.totalRevenue.usd],
+            [],
+            ['Month', 'Revenue NGN', 'Revenue USD', 'Subscribers'],
+            ...dashboardData.revenueHistory.map(r => [
+              r.month,
+              r.naira,
+              r.usd,
+              dashboardData.subscribersHistory.find(s => s.month === r.month)?.count ?? 0,
+            ]),
+          ]}
+        />
+      </div>
       <div className="flex flex-col gap-3.5">
         {isError ? (
           <SummaryCardError
@@ -55,7 +84,7 @@ const Dashboard = () => {
                 .map((_, i) => <SummaryCardSkeleton key={i} />)
             ) : (
               <>
-                <SummaryCard title="Total Reports" value={'0'}>
+                <SummaryCard title="Total Courses" value={formatNumber(dashboardData.totalCourses ?? 0)}>
                   <FileIcon />
                 </SummaryCard>
                 <SummaryCard
@@ -77,18 +106,8 @@ const Dashboard = () => {
                       ? `₦${formatNumber(dashboardData.totalRevenue.naira)}`
                       : `$${formatNumber(dashboardData.totalRevenue.usd)}`
                   }
-                  className="relative"
                 >
                   <MoneyIcon />
-                  <Button
-                    onClick={() =>
-                      setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))
-                    }
-                    className="absolute top-1.5 right-2 h-8 rounded-xl font-bold"
-                  >
-                    {currency === 'NGN' ? '₦' : '$'}
-                    <ArrowLeftRight />
-                  </Button>
                 </SummaryCard>
               </>
             )}
@@ -110,7 +129,7 @@ const Dashboard = () => {
             ) : isPending ? (
               <TotalRevenueSkeleton />
             ) : (
-              <TotalRevenueChart revenueData={dashboardData.revenueHistory} />
+              <TotalRevenueChart height={170} revenueData={dashboardData.revenueHistory} />
             )}
             <Link
               to={'/finance'}

@@ -1,9 +1,8 @@
 import AvatarCustom from '@/components/ui/custom/avatar';
-import ExportDropdown from '@/components/ui/custom/dropdown-menu';
 import type { CourseDetailsType } from '@/lib/constants';
 import { useGetCourses } from '@/queries/hooks';
 import { useQueryClient } from '@tanstack/react-query';
-import { EyeIcon, MoreVertical } from 'lucide-react';
+import { EyeIcon } from 'lucide-react';
 import { Link } from 'react-router';
 
 const Instructors = () => {
@@ -14,9 +13,6 @@ const Instructors = () => {
 
   return (
     <div className="hide-scrollbar relative flex h-[14.09rem] basis-full flex-col gap-8 overflow-auto rounded-[10px] px-4 pt-8 pb-7 shadow-[0px_2px_4px_0px_#0000001A]">
-      <ExportDropdown className="absolute top-2 right-2 self-end">
-        <MoreVertical size={16} />
-      </ExportDropdown>
       {isError ? (
         <InstructorListError
           onRetry={() =>
@@ -36,9 +32,9 @@ const Instructors = () => {
       )}
       <Link
         to={'/courses'}
-        className="text-center text-[8px]/[100%] font-semibold text-[#949494] underline"
+        className="text-center text-[10px] font-semibold text-[#949494] underline hover:text-[#305B43]"
       >
-        <span className="absolute inset-0"></span>
+        Read More...
       </Link>
     </div>
   );
@@ -66,7 +62,9 @@ const InstructorCard = (props: { instructor: CourseDetailsType }) => {
       </div>
       <div className="flex items-center gap-1.5">
         <EyeIcon size={16} />
-        <p className="text-[10px]/[100%] font-semibold text-[#474747]">0</p>
+        <p className="text-[10px]/[100%] font-semibold text-[#474747]">
+          {((instructor as { views?: number }).views ?? 0).toLocaleString()}
+        </p>
       </div>
     </div>
   );

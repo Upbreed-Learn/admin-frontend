@@ -52,9 +52,9 @@ function generateCurrencyDataPoints(data: MonthData[]): DataPoint[] {
   const latestKey = sorted[sorted.length - 1].month; // e.g. "2025-11"
   const latestDate = new Date(latestKey + '-01');
 
-  // Generate the last 6 months (oldest → newest)
+  // The last 12 months (oldest → newest)
   const months: string[] = [];
-  for (let i = 5; i >= 0; i--) {
+  for (let i = 11; i >= 0; i--) {
     const d = new Date(latestDate);
     d.setMonth(d.getMonth() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -70,7 +70,7 @@ function generateCurrencyDataPoints(data: MonthData[]): DataPoint[] {
   // Convert to DataPoint with month + year
   return months.map(key => {
     const d = new Date(key + '-01');
-    const monthName = d.toLocaleString('default', { month: 'long' });
+    const monthName = d.toLocaleString('default', { month: 'short' });
     const year = d.getFullYear();
     const value = map.get(key) ?? { usd: 0, naira: 0 };
 

@@ -33,10 +33,6 @@ const ROUTES = [
     label: 'Finance',
   },
   {
-    path: '/pricing',
-    label: 'Pricing',
-  },
-  {
     path: '/payouts',
     label: 'Payouts',
   },

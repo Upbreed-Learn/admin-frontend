@@ -157,6 +157,7 @@ export type BlogDetailsType = {
 };
 
 export interface DashboardDataType {
+  totalCourses?: number;
   totalInstructors: number;
   totalSubscribers: number;
   totalRevenue: {

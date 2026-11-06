@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import FinanceTabs from './tabs';
 import { useQueryState } from 'nuqs';
-import { ArrowLeftRight } from 'lucide-react';
 import MoreTransactionHistoryModal from './more-transaction-history-modal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERIES } from '@/queries';
@@ -55,15 +54,12 @@ const Finance = () => {
     <div className="flex flex-col gap-3">
       <FinanceTabs />
       <div className="flex flex-col gap-2 self-end">
-        <Button
-          onClick={() =>
-            setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))
-          }
-          className="h-8 rounded-xl font-bold"
+        <button
+          onClick={() => setCurrency(value => (value === 'NGN' ? 'USD' : 'NGN'))}
+          className="h-8 cursor-pointer rounded-full bg-[#D0EA50] px-4 text-[10px] font-semibold text-[#00230F]"
         >
-          {currency === 'NGN' ? '₦' : '$'}
-          <ArrowLeftRight />
-        </Button>
+          Switch to {currency === 'NGN' ? 'USD' : 'NGN'}
+        </button>
       </div>
       {isError ? (
         <FinanceStatsError

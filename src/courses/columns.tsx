@@ -8,7 +8,7 @@ import AvatarCustom from '@/components/ui/custom/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CourseDetailsType, EditCourseType } from '@/lib/constants';
 import useSendRequest from '@/lib/hooks/useSendRequest';
-import { formatToHMS } from '@/lib/utils';
+import { formatHm } from '@/lib/utils';
 import { MUTATIONS } from '@/queries';
 import { useGetCourse } from '@/queries/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -81,7 +81,7 @@ export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
       const data = row.original;
       return (
         <p className="text-[10px] font-semibold">
-          {formatToHMS(data.preview.durationInMinutes)}
+          {formatHm(data.preview.durationInMinutes)}
         </p>
       );
     },
@@ -96,6 +96,7 @@ export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
         </span>
       </div>
     ),
+    cell: ({ row }) => <p className="text-[10px] font-semibold">{row.original.preview?.lessonCount ?? 0} Lessons</p>,
   },
   {
     id: 'select',
@@ -161,12 +162,11 @@ export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
         <span className="text-[10px] font-semibold text-[#737373]">Views</span>
       </div>
     ),
-    cell: () => {
-      // const data = row.original;
+    cell: ({ row }) => {
+      const views = (row.original as { views?: number }).views ?? 0;
       return (
         <div className="flex items-center gap-2.5">
-          {/* <p>{data}</p> */}
-          <p>0</p>
+          <p className="text-[10px] font-semibold">{views.toLocaleString()}</p>
           <ViewsIcon fill="white" fill2="#FFFFFF40" />
         </div>
       );
