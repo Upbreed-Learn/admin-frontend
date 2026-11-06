@@ -82,6 +82,8 @@ const useGetVideos = (id: number) => {
 };
 
 const videoSchema = z.object({
+  // The lesson's id in the database (kept under its own name: the form list uses "id" for its own keys).
+  videoId: z.number().int().positive().optional(),
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
   bunnyVideoId: z.string().min(1, { message: 'Video ID is required' }),
@@ -208,7 +210,7 @@ const InstructorDetails = (props: {
         image: courseData?.thumbnail,
         videos:
           videosData?.length > 0
-            ? videosData
+            ? videosData.map(v => ({ ...v, videoId: (v as { id?: number }).id }))
             : [
                 {
                   title: '',
@@ -327,9 +329,10 @@ const InstructorDetails = (props: {
 
     if (values.videos.length > 0) {
       mutateVideos([
-        ...values.videos.map((video, i) => ({
+        ...values.videos.map(({ videoId, ...video }, i) => ({
           ...video,
-          id: i,
+          // Existing lessons keep their id (so they're updated, not duplicated); new ones have none.
+          ...(videoId ? { id: videoId } : {}),
           isTrailer: i === 0 ? true : false,
           isPublic: i === 0 ? true : video.isPublic,
           thumbnailUrl: video.thumbnailUrl,
