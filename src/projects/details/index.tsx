@@ -332,7 +332,7 @@ const InstructorDetails = (props: {
           id: i,
           isTrailer: i === 0 ? true : false,
           isPublic: i === 0 ? true : video.isPublic,
-          thumbnailUrl: i === 0 ? video.thumbnailUrl : '',
+          thumbnailUrl: video.thumbnailUrl,
         })),
       ]);
     }

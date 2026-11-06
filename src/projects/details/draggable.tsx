@@ -30,10 +30,8 @@ import type z from 'zod';
 import type { FormSchema } from '.';
 import { useRef, useState } from 'react';
 import ImageUploadIcon from '@/assets/jsx-icons/image-upload-icon';
-import { Input } from '@/components/ui/input';
 import useSendRequest from '@/lib/hooks/useSendRequest';
 import { MUTATIONS } from '@/queries';
-import { Skeleton } from '@/components/ui/skeleton';
 import VideoUploadButton from './video-upload';
 
 const libraryId = '515933';
@@ -193,87 +191,26 @@ function SortableItem(props: {
             name={`videos.${index}.thumbnailUrl`}
             render={({ field: { value, onChange } }) => (
               <FormItem>
-                <div
-                  className={cn(
-                    'flex cursor-pointer items-center justify-between',
-                    isDragging && 'border-[#305B43] bg-[#e5e5e5]',
-                  )}
-                  onDragOver={e => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={e => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                  }}
-                  onDrop={e => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                    const file = e.dataTransfer.files[0];
-                    if (
-                      file &&
-                      file.type.startsWith('image/') &&
-                      file.size <= 10 * 1024 * 1024
-                    ) {
-                      mutate(
-                        { image: file },
-                        {
-                          onSuccess: data => {
-                            // data.url is the URL returned from your backend
-                            onChange(data.data.url);
-                          },
+                <ThumbnailPicker
+                  value={typeof value === 'string' ? value : ''}
+                  uploading={isPending}
+                  dragging={isDragging}
+                  setDragging={setIsDragging}
+                  inputRef={inputRef}
+                  onPick={(file, done) =>
+                    mutate(
+                      { image: file },
+                      {
+                        onSuccess: data => {
+                          onChange(data.data.url);
+                          done(true);
                         },
-                      );
-                    }
-                  }}
-                  onClick={() => inputRef.current?.click()}
-                >
-                  <div className="flex size-24 items-center justify-center overflow-hidden rounded-[10px] bg-[#D9D9D9]">
-                    <Input
-                      ref={inputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (
-                          file &&
-                          file.type.startsWith('image/') &&
-                          file.size <= 10 * 1024 * 1024
-                        ) {
-                          mutate(
-                            { image: file },
-                            {
-                              onSuccess: data => {
-                                onChange(data.data.url);
-                              },
-                            },
-                          );
-                        }
-                      }}
-                    />
-                    {value ? (
-                      isPending ? (
-                        <Skeleton className="size-full" />
-                      ) : (
-                        <img
-                          src={
-                            typeof value === 'string'
-                              ? value
-                              : URL.createObjectURL(value)
-                          }
-                          alt="uploaded"
-                          className="size-full rounded object-cover"
-                        />
-                      )
-                    ) : (
-                      <>
-                        <ImageUploadIcon />
-                      </>
-                    )}
-                  </div>
-                  <p className="text-black">UPLOAD THUMBNAIL</p>
-                </div>
+                        onError: () => done(false),
+                      },
+                    )
+                  }
+                  onRemove={() => onChange('')}
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -326,5 +263,100 @@ function SortableItem(props: {
         </div>
       </fieldset>
     </fieldset>
+  );
+}
+
+const MAX_THUMB_BYTES = 10 * 1024 * 1024;
+
+/** Lesson thumbnail: shows the picture straight away while it uploads, then lets you replace or remove it. */
+function ThumbnailPicker({
+  value,
+  uploading,
+  dragging,
+  setDragging,
+  inputRef,
+  onPick,
+  onRemove,
+}: {
+  value: string;
+  uploading: boolean;
+  dragging: boolean;
+  setDragging: (v: boolean) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onPick: (file: File, done: (ok: boolean) => void) => void;
+  onRemove: () => void;
+}) {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const shown = preview ?? (value || null);
+
+  const take = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return setError('Choose an image (JPG, PNG or WEBP).');
+    if (file.size > MAX_THUMB_BYTES) return setError('Image must be 10 MB or smaller.');
+    setError(null);
+    const local = URL.createObjectURL(file);
+    setPreview(local);
+    onPick(file, ok => {
+      URL.revokeObjectURL(local);
+      setPreview(null);
+      if (!ok) setError('Upload failed. The previous thumbnail was kept.');
+    });
+  };
+
+  return (
+    <div
+      className={cn('flex items-center gap-5 rounded-lg p-1 transition-colors', dragging && 'bg-[#e5e5e5] ring-2 ring-[#305B43]')}
+      onDragOver={e => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={e => {
+        e.preventDefault();
+        setDragging(false);
+      }}
+      onDrop={e => {
+        e.preventDefault();
+        setDragging(false);
+        take(e.dataTransfer.files[0]);
+      }}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={e => {
+          take(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="relative flex aspect-video w-40 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[10px] bg-[#D9D9D9]"
+        aria-label={shown ? 'Replace thumbnail' : 'Upload thumbnail'}
+      >
+        {shown ? <img src={shown} alt="Thumbnail" className="size-full object-cover" /> : <ImageUploadIcon />}
+        {uploading && preview && (
+          <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px] font-semibold text-white">Uploading…</span>
+        )}
+      </button>
+      <div className="flex flex-1 flex-col items-start gap-2">
+        <p className="text-xs font-semibold text-black">{shown ? 'THUMBNAIL' : 'UPLOAD THUMBNAIL'}</p>
+        <p className="text-[11px] text-[#737373]">{shown ? (uploading && preview ? 'Uploading…' : 'This picture shows before the lesson plays.') : 'Click or drop an image here (16:9 looks best).'}</p>
+        {shown && !uploading && (
+          <div className="flex gap-2">
+            <button type="button" onClick={() => inputRef.current?.click()} className="cursor-pointer rounded-md border border-[#305B43] px-3 py-1 text-[11px] font-semibold text-[#305B43] hover:bg-[#305B43] hover:text-white">
+              Replace
+            </button>
+            <button type="button" onClick={onRemove} className="cursor-pointer rounded-md px-3 py-1 text-[11px] font-semibold text-[#9B9B9B] hover:text-red-600">
+              Remove
+            </button>
+          </div>
+        )}
+        {error && <p className="text-[11px] text-red-600">{error}</p>}
+      </div>
+    </div>
   );
 }
