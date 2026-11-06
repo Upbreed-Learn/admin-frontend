@@ -203,7 +203,7 @@ const ProjectCard = (props: { details: CourseDetailsType }) => {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm text-white">
-              {formatToHMS(details.details.preview.durationInMinutes * 60)}
+              {formatToHMS(details.details.preview.durationInSeconds ?? details.details.preview.durationInMinutes * 60)}
             </p>
             <p className="text-sm font-semibold text-white">
               {details.details.preview.lessonCount} Lesson

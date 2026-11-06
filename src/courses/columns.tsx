@@ -8,7 +8,7 @@ import AvatarCustom from '@/components/ui/custom/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CourseDetailsType, EditCourseType } from '@/lib/constants';
 import useSendRequest from '@/lib/hooks/useSendRequest';
-import { formatHm } from '@/lib/utils';
+import { formatToHMS } from '@/lib/utils';
 import { MUTATIONS } from '@/queries';
 import { useGetCourse } from '@/queries/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -81,7 +81,7 @@ export const CourseColumns: ColumnDef<CourseDetailsType>[] = [
       const data = row.original;
       return (
         <p className="text-[10px] font-semibold">
-          {formatHm(data.preview.durationInMinutes)}
+          {formatToHMS(data.preview.durationInSeconds ?? data.preview.durationInMinutes * 60)}
         </p>
       );
     },
