@@ -17,6 +17,7 @@ import ErrorPage from './ErrorPage';
 import Categories from './categories';
 import Pricing from './pricing';
 import Payouts from './payouts';
+import Settings from './settings';
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
       {
         path: '/pricing',
         element: <Pricing />,
+      },
+      {
+        path: '/settings',
+        element: <Settings />,
       },
       {
         path: '/payouts',

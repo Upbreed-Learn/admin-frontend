@@ -8,6 +8,7 @@ import Coin from '@/assets/jsx-icons/coin';
 import UsersMore from '@/assets/jsx-icons/users-more';
 import BlogIcon from '@/assets/jsx-icons/blog-icon';
 import Logout from '@/assets/jsx-icons/logout';
+import Settings from '@/assets/jsx-icons/settings';
 import Cookies from 'js-cookie';
 
 const ROUTES = [
@@ -221,6 +222,13 @@ const Sidebar = () => {
           ))}
         </div>
         <div className="flex flex-col gap-4 px-6">
+          <NavLink
+            to={'/settings'}
+            className={({ isActive }) => cn('flex items-center gap-4 text-xs/[100%] font-semibold text-white', isActive && 'text-[#D0EA50]')}
+          >
+            {pathname === '/settings' ? <Settings stroke={'#D0EA50'} /> : <Settings />}
+            <span>Settings</span>
+          </NavLink>
           <button
             onClick={() => {
               (Cookies.remove('rf'), navigate('/auth/login'));

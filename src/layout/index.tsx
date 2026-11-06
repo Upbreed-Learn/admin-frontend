@@ -1,4 +1,7 @@
-import { Outlet, useLocation, useParams } from 'react-router';
+import { Link, Outlet, useLocation, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { https } from '@/lib/https';
+import Notifications from './notifications';
 import Sidebar from './sidebar';
 import { cn } from '@/lib/utils';
 import 'prosemirror-view/style/prosemirror.css';
@@ -7,6 +10,7 @@ import { Toaster } from '@/components/ui/sonner';
 const RootLayout = () => {
   const { id } = useParams();
   const { pathname } = useLocation();
+  const me = useQuery({ queryKey: ['me'], queryFn: () => https.get('/user/profile').then(r => r.data.data as { fname: string }) });
 
   return (
     <div className="flex">
@@ -16,18 +20,16 @@ const RootLayout = () => {
         <div className="flex w-full max-w-[60rem] flex-col">
           <div
             className={cn(
-              'fixed z-20 flex w-[60rem] justify-end bg-white pt-14',
+              'fixed z-20 flex w-[60rem] justify-end bg-white pt-10 pb-2',
               pathname.includes('blog/create') && 'hidden',
             )}
           >
-            <p
-              className={cn(
-                'text-xs/[100%] font-bold text-[#737373]',
-                id && 'hidden',
-              )}
-            >
-              Hi, Super Admin
-            </p>
+            <div className={cn('flex items-center gap-4', id && 'hidden')}>
+              <Notifications />
+              <Link to="/settings" className="text-xs/[100%] font-bold text-[#737373] hover:text-[#305B43]">
+                Hi, {me.data?.fname || 'Admin'}
+              </Link>
+            </div>
           </div>
           <div
             className={cn(
