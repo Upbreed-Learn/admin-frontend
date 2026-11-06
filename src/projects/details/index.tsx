@@ -525,7 +525,10 @@ const InstructorDetails = (props: {
                         <>
                           <ImageUploadIcon />
                           <p className="text-[7px]/[100%] font-semibold text-[#9B9B9B]">
-                            UPLOAD IMAGE
+                            UPLOAD INSTRUCTOR PHOTO
+                          </p>
+                          <p className="px-4 text-center text-[7px]/[120%] text-[#9B9B9B]">
+                            Portrait. Shows in “About the Instructor”. The first lesson’s thumbnail is the course card image.
                           </p>
                         </>
                       )}
