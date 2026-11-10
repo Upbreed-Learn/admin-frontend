@@ -11,7 +11,7 @@ const RootLayout = () => {
   const { id } = useParams();
   const { pathname } = useLocation();
   // The dashboard and finance pages are wide and carry their own header (greeting, bell, filters).
-  const wide = pathname === '/' || pathname === '/finance';
+  const wide = pathname === '/' || pathname === '/finance' || pathname === '/payouts';
   const me = useQuery({ queryKey: ['me'], queryFn: () => https.get('/user/profile').then(r => r.data.data as { fname: string }) });
 
   return (
