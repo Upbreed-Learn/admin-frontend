@@ -10,6 +10,8 @@ import { Toaster } from '@/components/ui/sonner';
 const RootLayout = () => {
   const { id } = useParams();
   const { pathname } = useLocation();
+  // The dashboard and finance pages are wide and carry their own header (greeting, bell, filters).
+  const wide = pathname === '/' || pathname === '/finance';
   const me = useQuery({ queryKey: ['me'], queryFn: () => https.get('/user/profile').then(r => r.data.data as { fname: string }) });
 
   return (
@@ -17,11 +19,11 @@ const RootLayout = () => {
       <Toaster />
       <Sidebar />
       <main className="ml-[13.5rem] flex w-full justify-center px-8">
-        <div className="flex w-full max-w-[60rem] flex-col">
+        <div className={cn('flex w-full flex-col', wide ? 'max-w-[78rem]' : 'max-w-[60rem]')}>
           <div
             className={cn(
               'fixed z-20 flex w-[60rem] justify-end bg-white pt-10 pb-2',
-              pathname.includes('blog/create') && 'hidden',
+              (pathname.includes('blog/create') || wide) && 'hidden',
             )}
           >
             <div className={cn('flex items-center gap-4', id && 'hidden')}>
@@ -33,7 +35,7 @@ const RootLayout = () => {
           </div>
           <div
             className={cn(
-              !pathname.includes('blog/create') ? 'mt-[7.225625rem]' : 'pt-7',
+              wide ? 'pt-8 pb-12' : !pathname.includes('blog/create') ? 'mt-[7.225625rem]' : 'pt-7',
             )}
           >
             <Outlet />

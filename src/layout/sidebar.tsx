@@ -67,8 +67,8 @@ const Sidebar = () => {
               to={route.path}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-center gap-3 rounded-lg px-4 py-2 text-[11px]/[100%] font-semibold transition-colors hover:bg-white hover:text-[#737373] [&_svg]:size-4',
-                  isActive ? 'bg-white text-[#737373]' : 'bg-none text-white',
+                  'group flex items-center gap-3 rounded-lg px-4 py-2.5 text-[13px]/[100%] font-semibold transition-colors hover:bg-white/15 hover:text-white [&_svg]:size-4',
+                  isActive ? 'bg-[#D0EA50] text-[#00230F] hover:bg-[#D0EA50] hover:text-[#00230F]' : 'bg-none text-[#E8F0E4]',
                   route.path === '/categories' &&
                     'self-end hover:bg-transparent hover:text-[#D0EA50]',
                   isActive &&
