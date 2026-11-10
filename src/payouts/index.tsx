@@ -5,11 +5,13 @@ import { formatMoney } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import MoneyInput from '@/components/money-input';
 
 type Balance = {
   instructor: { id: number; name: string; email: string };
   bank: { bank: string | null; accountNo: string | null; accountName: string | null };
   byCurrency: Record<string, { totalEarning: number; monthlyEarning: number; paidOut: number; pendingPayout: number }>;
+  requests?: { id: number; currency: string; amount: number; requestedAt: string }[];
 };
 type Payout = { id: number; instructor: string; currency: string; amount: number; note: string | null; paidAt: string };
 
@@ -49,7 +51,14 @@ const Payouts = () => {
             <div key={b.instructor.id} className="flex flex-col gap-3 rounded-xl border border-[#D9D9D9] p-5 text-sm">
               <div className="flex flex-wrap justify-between gap-2">
                 <div>
-                  <p className="font-semibold">{b.instructor.name}</p>
+                  <p className="font-semibold">
+                    {b.instructor.name}
+                    {b.requests?.map(r => (
+                      <span key={r.id} className="ml-2 rounded-full bg-[#FFF4D6] px-2 py-0.5 text-[11px] font-semibold text-[#8A5A00]">
+                        Asked for {formatMoney(r.amount, r.currency)} on {new Date(r.requestedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                      </span>
+                    ))}
+                  </p>
                   <p className="text-xs text-[#737373]">{b.instructor.email}</p>
                 </div>
                 <p className="text-xs text-[#737373]">
@@ -123,7 +132,7 @@ function PayoutRow(props: { instructorId: number; currency: string; e: Balance['
             if (window.confirm(`Record a payout of ${formatMoney(Number(amount), currency)}?`)) record.mutate();
           }}
         >
-          <input type="number" min="0.01" step="0.01" max={e.pendingPayout} className={`${field} w-32`} value={amount} onChange={ev => setAmount(ev.target.value)} />
+          <MoneyInput className={`${field} w-36`} value={amount} onValue={setAmount} aria-label="Amount" required />
           <input className={`${field} w-48`} placeholder="Note (e.g. Q4 transfer)" value={note} onChange={ev => setNote(ev.target.value)} />
           <Button type="submit" disabled={record.isPending}>
             Record payout

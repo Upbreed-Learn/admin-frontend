@@ -47,12 +47,16 @@ import { toast } from 'sonner';
 import DeleteDialog from '@/components/delete-dialog';
 
 export const formSchema = z.object({
-  title: z.string().min(2, {
-    message: 'Title must be at least 2 characters.',
-  }),
-  description: z.string().min(10, {
-    message: 'Description must be at least 10 characters.',
-  }),
+  title: z
+    .string()
+    .trim()
+    .min(2, { message: 'Title must be at least 2 characters.' })
+    .max(300, { message: 'Title is too long. Keep it under 300 characters (put the rest in the description or the post).' }),
+  description: z
+    .string()
+    .trim()
+    .min(10, { message: 'Description must be at least 10 characters.' })
+    .max(2000, { message: 'Description is too long. Keep it under 2,000 characters.' }),
   mainContent: z.string().min(10, {
     message: 'Course Description must be at least 10 characters.',
   }),

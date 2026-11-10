@@ -4,9 +4,9 @@ import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import FileHandler from '@tiptap/extension-file-handler';
 import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
+import { Gallery, PositionedImage } from './media-nodes';
 import { Button } from '@/components/ui/button';
-import { ImageIcon, Heading1, Heading2, Heading3 } from 'lucide-react';
+import { ImageIcon, Heading1, Heading2, Heading3, GalleryHorizontal } from 'lucide-react';
 import { useRef, useEffect, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import type z from 'zod';
@@ -16,12 +16,20 @@ import { MUTATIONS } from '@/queries';
 import useSendRequest from '@/lib/hooks/useSendRequest';
 import { toast } from 'sonner';
 
+/** Upload one picture and give back its web address. */
+const uploadPicture = async (file: File) => {
+  const res = await MUTATIONS.uploadImage({ image: file });
+  return (res.data as { url?: string; data?: { url: string } }).url ?? (res.data as { data: { url: string } }).data.url;
+};
+
 interface EditorToolbarProps {
   editor: Editor | null;
 }
 
 const EditorToolbar = ({ editor }: EditorToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [galleryBusy, setGalleryBusy] = useState(false);
   const [, setUpdateTrigger] = useState(0);
 
   const { mutate, isPending } = useSendRequest<
@@ -93,12 +101,31 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
     event.target.value = '';
   };
 
+  // Several pictures at once become one slide gallery.
+  const handleGalleryChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    if (!files.length) return;
+    setGalleryBusy(true);
+    const id = toast.loading(`Uploading ${files.length} picture${files.length > 1 ? 's' : ''}…`);
+    try {
+      const urls: string[] = [];
+      for (const f of files) urls.push(await uploadPicture(f));
+      editor.chain().focus().insertGallery(urls.map(src => ({ src }))).run();
+      toast.success('Gallery added', { id, description: 'Click it to move it, resize it or add more slides.' });
+    } catch {
+      toast.error('Could not upload those pictures', { id });
+    } finally {
+      setGalleryBusy(false);
+    }
+  };
+
   const setHeading = (level: 1 | 2 | 3) => {
     editor.chain().focus().toggleHeading({ level }).run();
   };
 
   return (
-    <div className="mb-2 flex items-center gap-2 rounded bg-[#F1F1F1] p-2">
+    <div className="sticky top-0 z-30 mb-2 flex flex-wrap items-center gap-2 rounded bg-[#F1F1F1] p-2">
       <input
         ref={fileInputRef}
         type="file"
@@ -107,15 +134,35 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
         className="hidden"
       />
 
+      <input
+        ref={galleryInputRef}
+        type="file"
+        multiple
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        onChange={handleGalleryChange}
+        className="hidden"
+      />
+
       <Button
         type="button"
         variant="outline"
-        size="icon-sm"
+        size="sm"
         onClick={handleImageUpload}
-        title="Upload Image"
+        title="Add one picture"
         className="bg-white hover:bg-gray-100"
       >
-        <ImageIcon size={16} />
+        <ImageIcon size={16} /> Picture
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={galleryBusy}
+        onClick={() => galleryInputRef.current?.click()}
+        title="Add a slide gallery (pick several pictures)"
+        className="bg-white hover:bg-gray-100"
+      >
+        <GalleryHorizontal size={16} /> Gallery
       </Button>
 
       <div className="h-6 w-px bg-gray-300" />
@@ -164,6 +211,7 @@ const EditorToolbar = ({ editor }: EditorToolbarProps) => {
       >
         <Heading3 size={16} />
       </Button>
+      <p className="ml-auto text-[11px] text-[#737373]">Click a picture or gallery to place it left, centre, right or full width, resize it, or drag it.</p>
     </div>
   );
 };
@@ -205,10 +253,8 @@ const Tiptap = (props: {
         heading: false,
         link: false,
       }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-      }),
+      PositionedImage.configure({ allowBase64: false }),
+      Gallery.configure({ upload: uploadPicture }),
       Youtube.configure({
         controls: false,
         nocookie: true,
@@ -368,7 +414,7 @@ const Tiptap = (props: {
     <div className="flex flex-col">
       <EditorToolbar editor={editor} />
       <EditorContent
-        className="h-80 overflow-auto rounded bg-[#D9D9D980] [&_a]:text-blue-400 [&_a]:underline [&_h1]:text-4xl [&_h1]:leading-[2.75rem] [&_h1]:font-semibold [&_h1]:tracking-tight [&_h2]:text-3xl [&_h2]:leading-[2.375rem] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:text-2xl [&_h3]:leading-8 [&_h3]:font-medium [&_h3]:tracking-[-0.01em]"
+        className="ub-editor h-[36rem] overflow-auto rounded bg-[#D9D9D980] px-6 pt-14 pb-10 [&_a]:text-blue-400 [&_a]:underline [&_h1]:text-4xl [&_h1]:leading-[2.75rem] [&_h1]:font-semibold [&_h1]:tracking-tight [&_h2]:text-3xl [&_h2]:leading-[2.375rem] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:text-2xl [&_h3]:leading-8 [&_h3]:font-medium [&_h3]:tracking-[-0.01em]"
         editor={editor}
       />
     </div>
